@@ -1,0 +1,20 @@
+[package]
+name = "dol_save_server"
+version = "0.1.0"
+edition = "2021"
+authors = ["C113<949536395@qq.com>"]
+
+[dependencies]
+axum = { version = "0.8.1", features = [] }
+clap = { version = "4.5.27", features = ["derive"] }
+serde = { version = "1.0.217", features = ["derive"] }
+tokio = { version = "1.43.0", features = [
+    "rt-multi-thread",
+    "macros",
+    "net",
+    "fs",
+    "io-util",
+] }
+tower-http = { version = "0.6.2", features = ["fs"] }
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.19", features = ["chrono", "env-filter"] }
