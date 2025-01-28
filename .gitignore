@@ -1,2 +1,4 @@
 /target
 save/
+*.zip
+mod/boot.json
