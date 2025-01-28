@@ -14,6 +14,8 @@ def main [
     mut cfg = (open "./mod/boot.template.json")
     $cfg.version = (open "Cargo.toml") | get package.version
     $cfg.scriptFileList = ls "./mod/js" | get name | each { |f| $f | str replace -a "\\" "/" }
+    $cfg.additionFile = ["README.md", "LICENSE"]
+
     $cfg | save -f $boot
 
     mut files = [$boot]
