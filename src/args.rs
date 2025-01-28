@@ -18,7 +18,7 @@ pub struct Args {
     #[arg(long, default_value = "./")]
     pub root: PathBuf,
     /// 访问"/"时的默认文件名
-    #[arg(long, default_value = "index.html")]
+    #[arg(long, default_value = "Degrees of Lewdity.html")]
     pub index: String,
     /// 服务地址
     #[arg(long, default_value = "127.0.0.1:5000")]
