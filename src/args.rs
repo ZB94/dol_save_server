@@ -26,4 +26,7 @@ pub struct Args {
     /// 存档保存目录
     #[arg(long, default_value = "./save")]
     pub save_dir: PathBuf,
+    /// 启动时跳过初始化模组流程
+    #[arg(long)]
+    pub no_init_mod: bool,
 }

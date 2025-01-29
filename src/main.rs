@@ -32,7 +32,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let index = args.root.join(args.index);
     let root = args.root;
 
-    init_mod(&root)?;
+    if !args.no_init_mod {
+        init_mod(&root)?;
+    }
 
     let router = Router::new()
         // 保存存档

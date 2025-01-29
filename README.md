@@ -38,6 +38,7 @@ Options:
       --index <INDEX>        访问"/"时的默认文件名 [default: "Degrees of Lewdity.html"]
       --bind <BIND>          服务地址 [default: 127.0.0.1:5000]
       --save-dir <SAVE_DIR>  存档保存目录 [default: ./save]
+      --no-init-mod          启动时跳过初始化模组流程
   -h, --help                 Print help
   -V, --version              Print version
 ```
