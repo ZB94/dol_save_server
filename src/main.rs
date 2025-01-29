@@ -1,13 +1,23 @@
 #[macro_use]
 extern crate tracing;
 
-use std::{error::Error, path::Path, sync::Arc};
+use std::{
+    error::Error,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 
 mod args;
 mod save;
 
 use args::Args;
-use axum::{routing::post, Router};
+use axum::{
+    body::Body,
+    extract::State,
+    response::Response,
+    routing::{get, post},
+    Router,
+};
 use clap::Parser;
 use tower_http::services::{ServeDir, ServeFile};
 use tracing_subscriber::{fmt::time::ChronoLocal, EnvFilter};
@@ -25,11 +35,16 @@ async fn main() -> Result<(), Box<dyn Error>> {
     init_mod(&root)?;
 
     let router = Router::new()
-        .route(
-            "/api/save",
-            post(save::save).with_state(Arc::new(args.save_dir)),
-        )
+        // 保存存档
+        .route("/api/save", post(save::save))
+        // 显示已有存档
+        .route("/saves", get(save_list))
+        .with_state(Arc::new(args.save_dir.clone()))
+        // 获取存档内容
+        .nest_service("/save", ServeDir::new(args.save_dir))
+        // 主页
         .route_service("/", ServeFile::new(index))
+        // 其他文件
         .fallback_service(ServeDir::new(root));
 
     let listener = tokio::net::TcpListener::bind(args.bind)
@@ -38,12 +53,36 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let addr = listener.local_addr()?;
     info!("服务地址: http://{addr}/");
+    info!("你可以访问 http://{addr}/saves 来查看服务端已保存的存档");
 
     axum::serve(listener, router)
         .await
         .inspect_err(|error| error!(%error, "服务启动失败"))?;
 
     Ok(())
+}
+
+async fn save_list(State(save_dir): State<Arc<PathBuf>>) -> Response<Body> {
+    const TEMPLATE: &str = include_str!("../html/savelist.html");
+    let mut list = vec![];
+    if save_dir.exists() {
+        if let Ok(mut files) = tokio::fs::read_dir(save_dir.as_path()).await {
+            while let Ok(Some(file)) = files.next_entry().await {
+                let path = file.path();
+                if path.is_file() && path.extension().is_some_and(|ext| ext == "save") {
+                    let name = file.file_name().to_string_lossy().to_string();
+                    list.push(format!(r#"<option value="{name}">{name}</option>"#));
+                }
+            }
+        }
+    }
+    let list: String = list.join("");
+
+    Response::builder()
+        .status(200)
+        .header("ContentType", "text/html")
+        .body(TEMPLATE.replace("{list}", &list).into())
+        .unwrap()
 }
 
 fn init_log() {

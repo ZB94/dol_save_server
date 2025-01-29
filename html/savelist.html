@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>存档列表</title>
+</head>
+
+<body>
+    <div>
+        <select id="save_list" onchange="show()" autocomplete="off">
+            <option value="" selected>请选择存档</option>
+            {list}
+        </select>
+    </div>
+    <div>
+        <p>存档码</p>
+        <textarea id="save_data" cols="100" rows="20" autocomplete="off"></textarea>
+    </div>
+    <script lang="JavaScript">
+        async function show() {
+            let name = document.querySelector("#save_list").value;
+            let text = document.querySelector("#save_data");
+            if (name.length > 0) {
+                let resp = await fetch(`/save/${name}`);
+                if (resp.ok) {
+                    text.value = await resp.text();
+                }
+            } else {
+                text.value = "";
+            }
+        }
+    </script>
+</body>
+
+</html>
