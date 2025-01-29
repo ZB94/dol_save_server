@@ -1,3 +1,5 @@
+run-name: release ${{ github.ref_name }}
+
 on:
   push:
     tags:
@@ -35,7 +37,7 @@ jobs:
           # Files or folders to pack into release assets, relative path seperated by comma.
           # The files and folers will be added to the root path of archive.
           # Build outputs (bins and lib) will automatically added to the archive, you don't need to add them twice.
-          files_to_pack: README.md, LICENSE, save_server.mod.zip
+          files_to_pack: README.md, LICENSE
 
           # release create options, see https://cli.github.com/manual/gh_release_create
           # release_options: --draft --title 123
