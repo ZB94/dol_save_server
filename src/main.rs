@@ -1,14 +1,14 @@
 #[macro_use]
 extern crate tracing;
 
-use std::{error::Error, path::PathBuf, sync::Arc};
+use std::{error::Error, sync::Arc};
 
 mod args;
+mod save;
 
 use args::Args;
-use axum::{extract::State, http::StatusCode, routing::post, Json, Router};
+use axum::{routing::post, Router};
 use clap::Parser;
-use serde::Deserialize;
 use tower_http::services::{ServeDir, ServeFile};
 use tracing_subscriber::{fmt::time::ChronoLocal, EnvFilter};
 
@@ -23,7 +23,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let root = args.root;
 
     let router = Router::new()
-        .route("/api/save", post(save).with_state(Arc::new(args.save_dir)))
+        .route(
+            "/api/save",
+            post(save::save).with_state(Arc::new(args.save_dir)),
+        )
         .route_service("/", ServeFile::new(index))
         .fallback_service(ServeDir::new(root));
 
@@ -50,42 +53,4 @@ fn init_log() {
             }),
         )
         .init();
-}
-
-#[derive(Debug, Deserialize)]
-pub struct Save {
-    pub slot: u32,
-    pub name: String,
-    pub data: String,
-    pub new: bool,
-}
-
-#[instrument(skip(data, save_dir))]
-async fn save(
-    State(save_dir): State<Arc<PathBuf>>,
-    Json(Save {
-        slot,
-        name,
-        data,
-        new,
-    }): Json<Save>,
-) -> (StatusCode, Json<&'static str>) {
-    if let Err(error) = tokio::fs::create_dir_all(save_dir.as_ref()).await {
-        const MSG: &str = "创建存档目录失败";
-        warn!(%error, ?save_dir, "{MSG}");
-        return (StatusCode::INTERNAL_SERVER_ERROR, Json(MSG));
-    }
-
-    let file_name = format!("{}-{name}-{slot:02}.save", if new { "new" } else { "old" });
-    let save_path = save_dir.join(file_name);
-    if let Err(error) = tokio::fs::write(&save_path, data).await {
-        const MSG: &str = "存档文件保存失败";
-        warn!(%error, ?save_path, "{MSG}");
-        return (StatusCode::INTERNAL_SERVER_ERROR, Json(MSG));
-    }
-
-    const MSG: &str = "存档保存成功";
-    info!(?save_path, "{MSG}");
-
-    (StatusCode::OK, Json(MSG))
 }
