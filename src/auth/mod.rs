@@ -1,13 +1,11 @@
 mod login;
 
-use std::{path::PathBuf, sync::Arc};
-
 use axum::{
     extract::Request,
     middleware::Next,
     response::{IntoResponse, Redirect, Response},
     routing::get,
-    Extension, Router,
+    Router,
 };
 
 use tower::ServiceBuilder;
@@ -15,7 +13,7 @@ use tower::ServiceBuilder;
 pub use login::login;
 use tower_sessions::{Expiry, MemoryStore, Session, SessionManagerLayer};
 
-pub async fn router(user_path: PathBuf, router: Router) -> Router {
+pub async fn router(router: Router<crate::State>) -> Router<crate::State> {
     let store = MemoryStore::default();
     let session_layer = SessionManagerLayer::new(store)
         .with_secure(false)
@@ -26,18 +24,14 @@ pub async fn router(user_path: PathBuf, router: Router) -> Router {
         .route("/login", get(login).post(login))
         .layer(
             ServiceBuilder::new()
-                .layer(Extension(UserPath(Arc::new(user_path))))
                 .layer(session_layer)
                 .layer(axum::middleware::from_fn(verify)),
         )
 }
 
-#[derive(Debug, Clone)]
-pub(crate) struct UserPath(pub Arc<PathBuf>);
-
 async fn verify(
     session: Session,
-    Extension(UserPath(_path)): Extension<UserPath>,
+    // State(state): State<crate::State>,
     request: Request,
     next: Next,
 ) -> Response {

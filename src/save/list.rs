@@ -1,13 +1,11 @@
-use std::{path::PathBuf, sync::Arc};
-
 use axum::{body::Body, extract::State, response::Response};
 use chrono::TimeZone;
 
-pub async fn save_list(State(save_dir): State<Arc<PathBuf>>) -> Response<Body> {
+pub async fn save_list(State(state): State<crate::State>) -> Response<Body> {
     const TEMPLATE: &str = include_str!("../../html/savelist.html");
     let mut list = vec![];
-    if save_dir.exists() {
-        if let Ok(mut files) = tokio::fs::read_dir(save_dir.as_path()).await {
+    if state.save_dir.exists() {
+        if let Ok(mut files) = tokio::fs::read_dir(&state.save_dir).await {
             while let Ok(Some(file)) = files.next_entry().await {
                 let path = file.path();
                 if path.is_file() && path.extension().is_some_and(|ext| ext == "save") {

@@ -1,19 +1,17 @@
 use std::collections::HashMap;
 
 use axum::{
-    extract::{FromRequest, Request},
+    extract::{FromRequest, Request, State},
     http::Method,
     response::{IntoResponse, Redirect, Response},
-    Extension, Form,
+    Form,
 };
 use serde::Deserialize;
 use tower_sessions::Session;
 
-use super::UserPath;
-
 pub async fn login(
     session: Session,
-    Extension(UserPath(path)): Extension<UserPath>,
+    State(state): State<crate::State>,
     request: Request,
 ) -> Response {
     const HTML: &str = include_str!("../../html/login.html");
@@ -24,8 +22,8 @@ pub async fn login(
             debug!(?user, "用户登入");
 
             // 获取用户信息
-            let u = if path.exists() {
-                tokio::fs::read_to_string(path.as_ref())
+            let u = if state.auth_file.exists() {
+                tokio::fs::read_to_string(&state.auth_file)
                     .await
                     .inspect_err(|error| error!(%error, "读取用户列表失败"))
                     .ok()

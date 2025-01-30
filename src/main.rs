@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate tracing;
 
-use std::{error::Error, path::Path};
+use std::{error::Error, path::Path, sync::Arc};
 
 mod args;
 mod auth;
@@ -13,6 +13,8 @@ use clap::Parser;
 use tower_http::services::{ServeDir, ServeFile};
 use tracing_subscriber::{fmt::time::ChronoLocal, EnvFilter};
 
+pub type State = Arc<Args>;
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
@@ -20,24 +22,28 @@ async fn main() -> Result<(), Box<dyn Error>> {
     init_log();
     info!(?args, "当前参数");
 
-    let index = args.root.join(args.index);
-    let root = args.root;
+    let index = args.root.join(&args.index);
+    let root = args.root.clone();
 
     if !args.no_init_mod {
         init_mod(&root)?;
     }
 
+    let state = State::new(args);
     let mut app = Router::new()
         // 存档相关接口
-        .merge(save::router(args.save_dir))
+        .merge(save::router(state.clone()))
         // 主页
         .route_service("/", ServeFile::new(index))
         // 其他文件
         .fallback_service(ServeDir::new(root));
 
-    app = auth::router(Path::new("./users.json").to_path_buf(), app).await;
+    if state.enable_auth {
+        app = auth::router(app).await;
+    }
+    let app: Router<()> = app.with_state(state.clone());
 
-    let listener = tokio::net::TcpListener::bind(args.bind)
+    let listener = tokio::net::TcpListener::bind(&state.bind)
         .await
         .inspect_err(|error| error!(%error, "监听服务地址失败"))?;
 

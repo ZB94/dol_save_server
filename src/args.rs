@@ -29,4 +29,19 @@ pub struct Args {
     /// 启动时跳过初始化模组流程
     #[arg(long)]
     pub no_init_mod: bool,
+    /// 是否启用登录验证
+    #[arg(long)]
+    pub enable_auth: bool,
+    /// 用户列表文件路径
+    ///
+    /// 文件格式应如:
+    /// {
+    ///     "用户名1": "密码1",
+    ///     "用户名2": "密码2",
+    ///     ...
+    /// }
+    ///
+    /// 注意: 用户名应为运行系统的合法文件路径, 否则可能导致文件保存失败
+    #[arg(long, default_value = "./auth.json")]
+    pub auth_file: PathBuf,
 }
