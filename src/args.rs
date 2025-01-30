@@ -41,7 +41,7 @@ pub struct Args {
     ///     ...
     /// }
     ///
-    /// 注意: 用户名应为运行系统的合法文件路径, 否则可能导致文件保存失败
+    /// 注意: 用户名应为运行系统的合法目录路径, 否则可能导致存档保存失败
     #[arg(long, default_value = "./auth.json")]
     pub auth_file: PathBuf,
 }
