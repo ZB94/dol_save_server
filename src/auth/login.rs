@@ -6,14 +6,13 @@ use axum::{
     response::{IntoResponse, Redirect, Response},
     Extension, Form,
 };
-use axum_session::SessionNullPool;
-use axum_session_auth::AuthSession;
 use serde::Deserialize;
+use tower_sessions::Session;
 
 use super::UserPath;
 
 pub async fn login(
-    session: AuthSession<super::User, String, SessionNullPool, ()>,
+    session: Session,
     Extension(UserPath(path)): Extension<UserPath>,
     request: Request,
 ) -> Response {
@@ -44,8 +43,9 @@ pub async fn login(
             };
 
             // 校验用户名和密码
-            if u.is_some_and(|u| u == user) {
-                session.login_user(user.username);
+            if u.is_some_and(|u| u == user)
+                && session.insert("user", user.username.clone()).await.is_ok()
+            {
                 return Redirect::to("/").into_response();
             } else {
                 warn!(?user, "用户名或密码错误");
