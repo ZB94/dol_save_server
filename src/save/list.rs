@@ -1,11 +1,18 @@
 use axum::{body::Body, extract::State, response::Response};
 use chrono::TimeZone;
 
-pub async fn save_list(State(state): State<crate::State>) -> Response<Body> {
+use crate::auth::User;
+
+#[instrument(skip(state))]
+pub async fn save_list(State(state): State<crate::State>, User(user): User) -> Response<Body> {
     const TEMPLATE: &str = include_str!("../../html/savelist.html");
     let mut list = vec![];
-    if state.save_dir.exists() {
-        if let Ok(mut files) = tokio::fs::read_dir(&state.save_dir).await {
+
+    let save_dir = state.save_dir.join(user);
+    debug!(?save_dir, "存档目录");
+
+    if save_dir.exists() {
+        if let Ok(mut files) = tokio::fs::read_dir(&save_dir).await {
             while let Ok(Some(file)) = files.next_entry().await {
                 let path = file.path();
                 if path.is_file() && path.extension().is_some_and(|ext| ext == "save") {

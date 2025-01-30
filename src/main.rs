@@ -32,7 +32,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let state = State::new(args);
     let mut app = Router::new()
         // 存档相关接口
-        .merge(save::router(state.clone()))
+        .merge(save::router())
         // 主页
         .route_service("/", ServeFile::new(index))
         // 其他文件
@@ -63,7 +63,7 @@ fn init_log() {
         .with_timer(ChronoLocal::rfc_3339())
         .with_env_filter(
             EnvFilter::try_from_default_env().unwrap_or_else(|_| {
-                EnvFilter::new(format!("{}=trace,warn", env!("CARGO_CRATE_NAME")))
+                EnvFilter::new(format!("{}=debug,warn", env!("CARGO_CRATE_NAME")))
             }),
         )
         .init();

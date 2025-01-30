@@ -10,8 +10,8 @@ use serde::Deserialize;
 use tower_sessions::Session;
 
 pub async fn login(
-    session: Session,
     State(state): State<crate::State>,
+    session: Session,
     request: Request,
 ) -> Response {
     const HTML: &str = include_str!("../../html/login.html");
@@ -42,7 +42,10 @@ pub async fn login(
 
             // 校验用户名和密码
             if u.is_some_and(|u| u == user)
-                && session.insert("user", user.username.clone()).await.is_ok()
+                && super::User(user.username.clone())
+                    .set_session(&session)
+                    .await
+                    .is_ok()
             {
                 return Redirect::to("/").into_response();
             } else {
