@@ -4,6 +4,7 @@ extern crate tracing;
 use std::{error::Error, path::Path};
 
 mod args;
+mod auth;
 mod save;
 
 use args::Args;
@@ -26,13 +27,15 @@ async fn main() -> Result<(), Box<dyn Error>> {
         init_mod(&root)?;
     }
 
-    let router = Router::new()
+    let mut app = Router::new()
         // 存档相关接口
         .merge(save::router(args.save_dir))
         // 主页
         .route_service("/", ServeFile::new(index))
         // 其他文件
         .fallback_service(ServeDir::new(root));
+
+    app = auth::router(Path::new("./users.json").to_path_buf(), app).await;
 
     let listener = tokio::net::TcpListener::bind(args.bind)
         .await
@@ -42,7 +45,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     info!("服务地址: http://{addr}/");
     info!("你可以访问 http://{addr}/saves 来查看服务端已保存的存档");
 
-    axum::serve(listener, router)
+    axum::serve(listener, app)
         .await
         .inspect_err(|error| error!(%error, "服务启动失败"))?;
 
@@ -95,7 +98,7 @@ pub fn init_mod(dir: &Path) -> std::io::Result<()> {
     debug!(?mod_path, "模组路径");
 
     if let Some(mod_dir) = mod_path.parent() {
-        std::fs::create_dir_all(&mod_dir)
+        std::fs::create_dir_all(mod_dir)
             .inspect_err(|error| error!(%error, ?mod_dir, "创建模组目录失败"))?;
         info!(?mod_dir, "已创建模组目录");
     }

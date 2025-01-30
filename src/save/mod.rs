@@ -1,4 +1,5 @@
 mod list;
+#[allow(clippy::module_inception)]
 mod save;
 
 use std::{path::PathBuf, sync::Arc};

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录</title>
+</head>
+
+<body>
+    <form action="/login" method="post">
+        <div>
+            <label for="username">用户名: </label><br />
+            <input type="text" name="username" id="username" autocomplete="off">
+        </div>
+        <div>
+            <label for="password">密码: </label><br />
+            <input type="password" name="password" id="password" autocomplete="off">
+        </div>
+        <div>
+            <input type="reset" value="重置">
+            <input type="submit" value="登入">
+        </div>
+        <p style="color: red;">{message}</p>
+    </form>
+</body>
+
+</html>
