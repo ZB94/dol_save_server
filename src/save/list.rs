@@ -1,6 +1,7 @@
 use std::{path::PathBuf, sync::Arc};
 
 use axum::{body::Body, extract::State, response::Response};
+use chrono::TimeZone;
 
 pub async fn save_list(State(save_dir): State<Arc<PathBuf>>) -> Response<Body> {
     const TEMPLATE: &str = include_str!("../../html/savelist.html");
@@ -10,8 +11,17 @@ pub async fn save_list(State(save_dir): State<Arc<PathBuf>>) -> Response<Body> {
             while let Ok(Some(file)) = files.next_entry().await {
                 let path = file.path();
                 if path.is_file() && path.extension().is_some_and(|ext| ext == "save") {
+                    let time = path
+                        .metadata()
+                        .and_then(|m| m.modified())
+                        .ok()
+                        .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
+                        .and_then(|d| chrono::Local.timestamp_opt(d.as_secs() as i64, 0).single())
+                        .map(|time| time.format(" %F %T").to_string())
+                        .unwrap_or_default();
+
                     let name = file.file_name().to_string_lossy().to_string();
-                    list.push(format!(r#"<option value="{name}">{name}</option>"#));
+                    list.push(format!(r#"<option value="{name}">{name}{time}</option>"#));
                 }
             }
         }
