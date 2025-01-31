@@ -32,4 +32,4 @@
 
 运行时如果不存在配置文件(`dol_save_server.toml`), 将会在运行目录生成默认配置文件, **修改配置后需要重启才能生效**.
 
-详细配置说明请查看[`dol_save_server.toml`]("./dol_save_server.toml)
+详细配置说明请查看[`dol_save_server.toml`](./dol_save_server.toml)
