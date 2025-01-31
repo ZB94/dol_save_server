@@ -14,10 +14,13 @@ pub struct Config {
     pub save_dir: PathBuf,
     /// 启动时跳过初始化模组流程
     pub init_mod: bool,
+    #[serde(default)]
     pub auth: Auth,
+    #[serde(default)]
+    pub tls: Tls,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Auth {
     pub enable: bool,
     #[serde(default)]
@@ -28,6 +31,15 @@ pub struct Auth {
 pub struct User {
     pub username: String,
     pub password: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+pub struct Tls {
+    pub enable: bool,
+    #[serde(default)]
+    pub key: String,
+    #[serde(default)]
+    pub cert: String,
 }
 
 impl Config {

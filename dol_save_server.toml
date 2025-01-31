@@ -29,3 +29,14 @@ enable = false
 username = "anonymous"
 # 密码
 password = ""
+
+# TLS 相关配置
+[tls]
+# 是否启用
+enable = false
+key = """
+替换为你的证书密钥 PEM格式
+"""
+cert = """
+替换为你的证书CERT PEM格式
+"""

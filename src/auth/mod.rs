@@ -16,10 +16,10 @@ use tower_sessions::{Expiry, MemoryStore, Session, SessionManagerLayer};
 
 use crate::Cfg;
 
-pub async fn router(router: Router<Cfg>) -> Router<Cfg> {
+pub async fn router(router: Router<Cfg>, secure: bool) -> Router<Cfg> {
     let store = MemoryStore::default();
     let session_layer = SessionManagerLayer::new(store)
-        .with_secure(false)
+        .with_secure(secure)
         .with_expiry(Expiry::OnSessionEnd);
 
     router

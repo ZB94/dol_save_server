@@ -8,6 +8,7 @@ mod config;
 mod save;
 
 use axum::Router;
+use axum_server::tls_rustls::{RustlsAcceptor, RustlsConfig};
 use config::Config;
 use tower_http::{
     compression::CompressionLayer,
@@ -56,7 +57,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .fallback_service(ServeDir::new(root));
 
     if cfg.auth.enable {
-        app = auth::router(app).await;
+        app = auth::router(app, cfg.tls.enable).await;
     }
     let app: Router<()> = app
         .layer(
@@ -68,17 +69,37 @@ async fn main() -> Result<(), Box<dyn Error>> {
         )
         .with_state(cfg.clone());
 
-    let listener = tokio::net::TcpListener::bind(&cfg.bind)
-        .await
+    let listener = std::net::TcpListener::bind(&cfg.bind)
         .inspect_err(|error| error!(%error, "监听服务地址失败"))?;
 
-    let addr = listener.local_addr()?;
-    info!("服务地址: http://{addr}/");
-    info!("你可以访问 http://{addr}/saves 来查看服务端已保存的存档");
+    let addr = listener.local_addr().unwrap();
 
-    axum::serve(listener, app)
+    if cfg.tls.enable {
+        let tls = RustlsConfig::from_pem(
+            cfg.tls.cert.clone().into_bytes(),
+            cfg.tls.key.clone().into_bytes(),
+        )
         .await
-        .inspect_err(|error| error!(%error, "服务启动失败"))?;
+        .inspect_err(|error| error!(%error, "初始化TLS配置失败"))?;
+
+        info!("服务地址: https://{addr}/");
+        info!("你可以访问 https://{addr}/saves 来查看服务端已保存的存档");
+
+        let acceptor = RustlsAcceptor::new(tls);
+        axum_server::from_tcp(listener)
+            .acceptor(acceptor)
+            .serve(app.into_make_service())
+            .await
+            .inspect_err(|error| error!(%error, "服务启动失败"))?;
+    } else {
+        info!("服务地址: http://{addr}/");
+        info!("你可以访问 http://{addr}/saves 来查看服务端已保存的存档");
+
+        axum_server::from_tcp(listener)
+            .serve(app.into_make_service())
+            .await
+            .inspect_err(|error| error!(%error, "服务启动失败"))?;
+    }
 
     Ok(())
 }
