@@ -10,7 +10,10 @@ mod save;
 use args::Args;
 use axum::Router;
 use clap::Parser;
-use tower_http::services::{ServeDir, ServeFile};
+use tower_http::{
+    compression::CompressionLayer,
+    services::{ServeDir, ServeFile},
+};
 use tracing_subscriber::{fmt::time::ChronoLocal, EnvFilter};
 
 pub type State = Arc<Args>;
@@ -41,7 +44,15 @@ async fn main() -> Result<(), Box<dyn Error>> {
     if state.enable_auth {
         app = auth::router(app).await;
     }
-    let app: Router<()> = app.with_state(state.clone());
+    let app: Router<()> = app
+        .layer(
+            CompressionLayer::new()
+                .br(true)
+                .deflate(true)
+                .gzip(true)
+                .zstd(true),
+        )
+        .with_state(state.clone());
 
     let listener = tokio::net::TcpListener::bind(&state.bind)
         .await

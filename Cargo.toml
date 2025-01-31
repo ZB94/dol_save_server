@@ -22,7 +22,7 @@ tokio = { version = "1.43.0", features = [
     "io-util",
 ] }
 tower = "0.5.2"
-tower-http = { version = "0.6.2", features = ["fs"] }
+tower-http = { version = "0.6.2", features = ["fs", "compression-full"] }
 tower-sessions = "0.14.0"
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["chrono", "env-filter"] }

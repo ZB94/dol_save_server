@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use axum::{
     extract::{FromRequest, Request, State},
     http::Method,
-    response::{IntoResponse, Redirect, Response},
+    response::{Html, IntoResponse, Redirect, Response},
     Form,
 };
 use serde::Deserialize;
@@ -55,11 +55,7 @@ pub async fn login(
         }
     }
 
-    Response::builder()
-        .status(200)
-        .header("ContentType", "text/html")
-        .body(HTML.replace("{message}", &msg).into())
-        .unwrap()
+    Html::<String>(HTML.replace("{message}", &msg).into()).into_response()
 }
 
 #[derive(Debug, Deserialize, PartialEq, Eq)]
