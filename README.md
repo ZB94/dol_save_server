@@ -23,55 +23,13 @@
 {save_type}-{save_name}-{slot}.save
 ```
 - `save_type`: 存档类型, 有以下值
-    - `new`：表示使用`indexedDB`存档(默认存档方式)
-    - `old`: 旧的存档方式
+    - `00`：表示使用`indexedDB`存档(默认存档方式)
+    - `01`: 旧的存档方式
 - `save_name`: 创建角色时输入的存档名称
 - `slot`: 存档位置(`0`为自动存档)
 
-### 程序运行参数
+### 服务配置
 
-```
-Usage: dol_save_server [OPTIONS]
+运行时如果不存在配置文件(`dol_save_server.toml`), 将会在运行目录生成默认配置文件, **修改配置后需要重启才能生效**.
 
-Options:
-      --root <ROOT>
-          游戏根目录
-
-          [default: ./]
-
-      --index <INDEX>
-          访问"/"时的默认文件名
-
-          [default: "Degrees of Lewdity.html"]
-
-      --bind <BIND>
-          服务地址
-
-          [default: 127.0.0.1:5000]
-
-      --save-dir <SAVE_DIR>
-          存档保存目录
-
-          [default: ./save]
-
-      --no-init-mod
-          启动时跳过初始化模组流程
-
-      --enable-auth
-          是否启用登录验证
-
-      --auth-file <AUTH_FILE>
-          用户列表文件路径
-
-          文件格式应如: { "用户名1": "密码1", "用户名2": "密码2", ... }
-
-          注意: 用户名应为运行系统的合法目录路径, 否则可能导致存档保存失败
-
-          [default: ./auth.json]
-
-  -h, --help
-          Print help (see a summary with '-h')
-
-  -V, --version
-          Print version
-```
+详细配置说明请查看[`dol_save_server.toml`]("./dol_save_server.toml)

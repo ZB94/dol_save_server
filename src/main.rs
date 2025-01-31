@@ -3,36 +3,50 @@ extern crate tracing;
 
 use std::{error::Error, path::Path, sync::Arc};
 
-mod args;
 mod auth;
+mod config;
 mod save;
 
-use args::Args;
 use axum::Router;
-use clap::Parser;
+use config::Config;
 use tower_http::{
     compression::CompressionLayer,
     services::{ServeDir, ServeFile},
 };
 use tracing_subscriber::{fmt::time::ChronoLocal, EnvFilter};
 
-pub type State = Arc<Args>;
+pub type Cfg = Arc<Config>;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let args = Args::parse();
-
     init_log();
-    info!(?args, "当前参数");
 
-    let index = args.root.join(&args.index);
-    let root = args.root.clone();
+    let config_path =
+        Path::new(&std::env::var("DOL_SAVE_SERVER").unwrap_or_else(|_| Config::PATH.to_string()))
+            .to_path_buf();
+    if !config_path.exists() {
+        info!("配置文件不存在, 生成默认配置");
+        tokio::fs::write(&config_path, Config::DEFAULT)
+            .await
+            .inspect_err(|error| error!(%error, "生成默认配置文件失败"))?;
+    }
 
-    if !args.no_init_mod {
+    let config = tokio::fs::read_to_string(&config_path)
+        .await
+        .inspect_err(|error| error!(%error, ?config_path, "读取配置文件失败"))?;
+    let config = toml::from_str::<Config>(&config)
+        .inspect_err(|error| error!(%error, ?config_path, "解析配置文件失败"))?;
+
+    info!(?config, "当前配置");
+
+    let index = config.root.join(&config.index);
+    let root = config.root.clone();
+
+    if config.init_mod {
         init_mod(&root)?;
     }
 
-    let state = State::new(args);
+    let cfg = Cfg::new(config);
     let mut app = Router::new()
         // 存档相关接口
         .merge(save::router())
@@ -41,7 +55,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         // 其他文件
         .fallback_service(ServeDir::new(root));
 
-    if state.enable_auth {
+    if cfg.auth.enable {
         app = auth::router(app).await;
     }
     let app: Router<()> = app
@@ -52,9 +66,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 .gzip(true)
                 .zstd(true),
         )
-        .with_state(state.clone());
+        .with_state(cfg.clone());
 
-    let listener = tokio::net::TcpListener::bind(&state.bind)
+    let listener = tokio::net::TcpListener::bind(&cfg.bind)
         .await
         .inspect_err(|error| error!(%error, "监听服务地址失败"))?;
 

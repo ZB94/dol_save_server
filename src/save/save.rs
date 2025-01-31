@@ -1,7 +1,7 @@
 use axum::{extract::State, http::StatusCode, Json};
 use serde::Deserialize;
 
-use crate::auth::User;
+use crate::{auth::User, Cfg};
 
 #[derive(Debug, Deserialize)]
 pub struct Save {
@@ -13,7 +13,7 @@ pub struct Save {
 
 #[instrument(skip(data, state))]
 pub async fn save(
-    State(state): State<crate::State>,
+    State(state): State<Cfg>,
     User(user): User,
     Json(Save {
         slot,
@@ -31,7 +31,7 @@ pub async fn save(
         return (StatusCode::INTERNAL_SERVER_ERROR, Json(MSG));
     }
 
-    let file_name = format!("{}-{name}-{slot:02}.save", if new { "new" } else { "old" });
+    let file_name = format!("{}-{name}-{slot:02}.save", if new { "00" } else { "01" });
     let save_path = save_dir.join(file_name);
     if let Err(error) = tokio::fs::write(&save_path, data).await {
         const MSG: &str = "存档文件保存失败";

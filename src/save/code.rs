@@ -1,13 +1,9 @@
 use axum::extract::{Path, State};
 
-use crate::auth::User;
+use crate::{auth::User, Cfg};
 
 #[instrument(skip(state))]
-pub async fn code(
-    State(state): State<crate::State>,
-    User(user): User,
-    Path(name): Path<String>,
-) -> String {
+pub async fn code(State(state): State<Cfg>, User(user): User, Path(name): Path<String>) -> String {
     let save_path = state.save_dir.join(user).join(name);
     debug!(?save_path, "存档路径");
 

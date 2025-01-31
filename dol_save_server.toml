@@ -1,0 +1,30 @@
+# 游戏根目录
+root = "./"
+
+# 访问"/"时的默认文件名
+index = "Degrees of Lewdity.html"
+
+# 服务地址
+bind = "127.0.0.1:5000"
+
+# 存档保存目录
+save_dir = "./save"
+
+# 启用时检查和修改"modList.json", 并更新存档模组
+init_mod = true
+
+# 用户验证相关配置
+[auth]
+# 是否启用
+enable = false
+
+# 用户配置 如果需要添加用户, 则按照以下格式在此处添加
+# [[auth.users]]
+# username = "用户名"
+# password = "密码"
+[[auth.users]]
+# 用户名
+# 注意: 用户名应为运行系统的合法目录路径, 否则可能导致存档保存失败
+username = "anonymous"
+# 密码
+password = ""

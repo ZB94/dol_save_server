@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use axum::{
     extract::{FromRequest, Request, State},
     http::Method,
@@ -9,11 +7,9 @@ use axum::{
 use serde::Deserialize;
 use tower_sessions::Session;
 
-pub async fn login(
-    State(state): State<crate::State>,
-    session: Session,
-    request: Request,
-) -> Response {
+use crate::Cfg;
+
+pub async fn login(State(state): State<Cfg>, session: Session, request: Request) -> Response {
     const HTML: &str = include_str!("../../html/login.html");
     let mut msg = String::default();
 
@@ -22,26 +18,19 @@ pub async fn login(
             debug!(?user, "用户登入");
 
             // 获取用户信息
-            let u = if state.auth_file.exists() {
-                tokio::fs::read_to_string(&state.auth_file)
-                    .await
-                    .inspect_err(|error| error!(%error, "读取用户列表失败"))
-                    .ok()
-                    .and_then(|s| {
-                        serde_json::from_str::<HashMap<String, String>>(&s)
-                            .inspect_err(|error| error!(%error, "解析用户列表失败"))
-                            .ok()
-                    })
-                    .and_then(|mut users| users.remove_entry(&user.username))
-                    .map(|(username, password)| User { username, password })
+            let u = if state.auth.users.is_empty() {
+                warn!("当前用户列表为空");
+                None
             } else {
-                let default_user = Default::default();
-                error!(?default_user, "用户列表不存在, 使用默认用户");
-                Some(default_user)
+                state
+                    .auth
+                    .users
+                    .iter()
+                    .find(|u| u.username == user.username)
             };
 
             // 校验用户名和密码
-            if u.is_some_and(|u| u == user)
+            if u.is_some_and(|u| &user == u)
                 && super::User(user.username.clone())
                     .set_session(&session)
                     .await
@@ -55,20 +44,17 @@ pub async fn login(
         }
     }
 
-    Html::<String>(HTML.replace("{message}", &msg).into()).into_response()
+    Html(HTML.replace("{message}", &msg)).into_response()
 }
 
-#[derive(Debug, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Deserialize)]
 struct User {
     pub username: String,
     pub password: String,
 }
 
-impl Default for User {
-    fn default() -> Self {
-        Self {
-            username: "anonymous".to_string(),
-            password: Default::default(),
-        }
+impl PartialEq<crate::config::User> for User {
+    fn eq(&self, other: &crate::config::User) -> bool {
+        self.username == other.username && self.password == other.password
     }
 }

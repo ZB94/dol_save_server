@@ -1,10 +1,10 @@
 use axum::{extract::State, response::Html};
 use chrono::TimeZone;
 
-use crate::auth::User;
+use crate::{auth::User, Cfg};
 
 #[instrument(skip(state))]
-pub async fn save_list(State(state): State<crate::State>, User(user): User) -> Html<String> {
+pub async fn save_list(State(state): State<Cfg>, User(user): User) -> Html<String> {
     const TEMPLATE: &str = include_str!("../../html/savelist.html");
     let mut list = vec![];
 
@@ -33,5 +33,5 @@ pub async fn save_list(State(state): State<crate::State>, User(user): User) -> H
     }
     let list: String = list.join("");
 
-    Html(TEMPLATE.replace("{list}", &list).into())
+    Html(TEMPLATE.replace("{list}", &list))
 }

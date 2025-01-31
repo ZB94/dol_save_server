@@ -10,7 +10,9 @@ use axum::{
 
 use list::save_list;
 
-pub fn router() -> Router<crate::State> {
+use crate::Cfg;
+
+pub fn router() -> Router<Cfg> {
     Router::new()
         // 保存存档
         .route("/api/save", post(save::save))

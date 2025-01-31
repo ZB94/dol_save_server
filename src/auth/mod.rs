@@ -14,7 +14,9 @@ use tower::ServiceBuilder;
 pub use login::login;
 use tower_sessions::{Expiry, MemoryStore, Session, SessionManagerLayer};
 
-pub async fn router(router: Router<crate::State>) -> Router<crate::State> {
+use crate::Cfg;
+
+pub async fn router(router: Router<Cfg>) -> Router<Cfg> {
     let store = MemoryStore::default();
     let session_layer = SessionManagerLayer::new(store)
         .with_secure(false)
@@ -30,12 +32,7 @@ pub async fn router(router: Router<crate::State>) -> Router<crate::State> {
         )
 }
 
-async fn verify(
-    session: Session,
-    // State(state): State<crate::State>,
-    request: Request,
-    next: Next,
-) -> Response {
+async fn verify(session: Session, request: Request, next: Next) -> Response {
     trace!(?session, "鉴权");
 
     if session
@@ -64,14 +61,11 @@ impl User {
     }
 }
 
-impl FromRequestParts<crate::State> for User {
+impl FromRequestParts<Cfg> for User {
     type Rejection = (StatusCode, &'static str);
 
-    async fn from_request_parts(
-        parts: &mut Parts,
-        state: &crate::State,
-    ) -> Result<Self, Self::Rejection> {
-        if state.enable_auth {
+    async fn from_request_parts(parts: &mut Parts, state: &Cfg) -> Result<Self, Self::Rejection> {
+        if state.auth.enable {
             let session = Session::from_request_parts(parts, state).await?;
             if let Ok(Some(user)) = session.get::<String>(Self::KEY).await {
                 Ok(User(user))
