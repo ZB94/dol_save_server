@@ -1,8 +1,8 @@
-use std::{net::SocketAddr, path::PathBuf};
+use std::{fmt, net::SocketAddr, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Config {
     /// 游戏根目录
     pub root: PathBuf,
@@ -20,20 +20,20 @@ pub struct Config {
     pub tls: Tls,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[derive(Serialize, Deserialize, Clone, Default)]
 pub struct Auth {
     pub enable: bool,
     #[serde(default)]
     pub users: Vec<User>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct User {
     pub username: String,
     pub password: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[derive(Serialize, Deserialize, Clone, Default)]
 pub struct Tls {
     pub enable: bool,
     #[serde(default)]
@@ -45,4 +45,46 @@ pub struct Tls {
 impl Config {
     pub const PATH: &str = "./dol_save_server.toml";
     pub const DEFAULT: &str = include_str!("../dol_save_server.toml");
+}
+
+impl fmt::Debug for Tls {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Tls")
+            .field("enable", &self.enable)
+            .field("key", &"***")
+            .field("cert", &"***")
+            .finish()
+    }
+}
+
+impl fmt::Debug for User {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("User")
+            .field("username", &self.username)
+            .field("password", &"***")
+            .finish()
+    }
+}
+
+impl fmt::Debug for Auth {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Auth")
+            .field("enable", &self.enable)
+            .field("users", &self.users)
+            .finish()
+    }
+}
+
+impl fmt::Debug for Config {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Config")
+            .field("root", &self.root)
+            .field("index", &self.index)
+            .field("bind", &self.bind)
+            .field("save_dir", &self.save_dir)
+            .field("init_mod", &self.init_mod)
+            .field("auth", &self.auth)
+            .field("tls", &self.tls)
+            .finish()
+    }
 }
