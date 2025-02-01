@@ -5,5 +5,25 @@
   "scriptFileList": [],
   "tweeFileList": [],
   "imgFileList": [],
-  "additionFile": []
+  "additionFile": [],
+  "addonPlugin": [
+    {
+      "modName": "TweeReplacer",
+      "addonName": "TweeReplacerAddon",
+      "modVersion": "1.6.1",
+      "params": [
+        {
+          "passage": "overlayReplace",
+          "findRegex": "<<toggleTab>>\n\\s*<<replace #customOverlayContent>><<optionsExportImport>><</replace>>",
+          "replace": "<<toggleTab>><<replace #customOverlayContent>><<optionsExportImport>><</replace>><</button>><<button \"云存档\">><<toggleTab>><<replace #customOverlayContent>><<dss_save_list>><</replace>>"
+        }
+      ]
+    }
+  ],
+  "dependenceInfo": [
+    {
+      "modName": "TweeReplacer",
+      "version": "1.6.1"
+    }
+  ]
 }
