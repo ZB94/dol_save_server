@@ -1,3 +1,5 @@
+use std::fmt;
+
 use axum::{
     extract::{FromRequest, Request, State},
     http::Method,
@@ -47,7 +49,7 @@ pub async fn login(State(state): State<Cfg>, session: Session, request: Request)
     Html(HTML.replace("{message}", &msg)).into_response()
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 struct User {
     pub username: String,
     pub password: String,
@@ -56,5 +58,14 @@ struct User {
 impl PartialEq<crate::config::User> for User {
     fn eq(&self, other: &crate::config::User) -> bool {
         self.username == other.username && self.password == other.password
+    }
+}
+
+impl fmt::Debug for User {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("User")
+            .field("username", &self.username)
+            .field("password", &"***")
+            .finish()
     }
 }
