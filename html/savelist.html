@@ -51,7 +51,7 @@
         async function dss_code_show() {
             let name = list.value;
             if (name.length > 0) {
-                let resp = await fetch(`/save/${name}`);
+                let resp = await fetch(`/api/save/${name}`);
                 if (resp.ok) {
                     code.value = await resp.text();
                 }

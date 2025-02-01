@@ -2,7 +2,7 @@ use std::{fmt, net::SocketAddr, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Config {
     /// 游戏根目录
     pub root: PathBuf,
@@ -20,7 +20,7 @@ pub struct Config {
     pub tls: Tls,
 }
 
-#[derive(Serialize, Deserialize, Clone, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Auth {
     pub enable: bool,
     #[serde(default)]
@@ -62,29 +62,6 @@ impl fmt::Debug for User {
         f.debug_struct("User")
             .field("username", &self.username)
             .field("password", &"***")
-            .finish()
-    }
-}
-
-impl fmt::Debug for Auth {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Auth")
-            .field("enable", &self.enable)
-            .field("users", &self.users)
-            .finish()
-    }
-}
-
-impl fmt::Debug for Config {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Config")
-            .field("root", &self.root)
-            .field("index", &self.index)
-            .field("bind", &self.bind)
-            .field("save_dir", &self.save_dir)
-            .field("init_mod", &self.init_mod)
-            .field("auth", &self.auth)
-            .field("tls", &self.tls)
             .finish()
     }
 }
