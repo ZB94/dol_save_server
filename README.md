@@ -2,6 +2,8 @@
 
 一个用于适用于[Degrees of Lewdity](https://github.com/Eltirosto/Degrees-of-Lewdity-Chinese-Localization)的Web服务程序, 提供在游戏存档时同时在本地创建对应存档文件(需要模组加载器并加载配套模组)
 
+![云存档](./images/云存档.jpg)
+
 ## 使用方法
 
 ### 快速使用
@@ -15,7 +17,8 @@
 
 ### 查看存档
 
-可以通过访问`http://服务地址/saves`来查看服务端已保存的存档
+- 在游戏存档界面可以查看、加载服务端已保存的存档
+- 访问`http://服务地址/saves`来查看服务端已保存的存档
 
 ### 存档文件名格式
 

@@ -1,28 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
+:: dss_save_list [widget]
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>存档列表</title>
-</head>
-
-<body>
+<<widget "dss_save_list">>
     <div>
-        <select id="dss_save_list" onchange="dss_code_show()" autocomplete="off">
+        <select id="dss_save_list" autocomplete="off">
             <option value="" selected>请选择存档</option>
         </select>
-        <button onclick="dss_list_load()">刷新</button>
+        <button id="dss_save_load">刷新</button>
+        <button id="dss_code_load">加载存档</button>
     </div>
     <div>
         <p>存档码</p>
-        <textarea id="dss_save_code" cols="100" rows="20" autocomplete="off"></textarea>
+        <textarea id="dss_save_code" autocomplete="off" cols=100 rows=20 readonly></textarea>
     </div>
-    <script type="text/javascript">
-        let list = document.querySelector("#dss_save_list");
-        let code = document.querySelector("#dss_save_code");
-
+    <<script>>
         async function dss_list_load() {
+            let list = document.querySelector("#dss_save_list");
+            let code = document.querySelector("#dss_save_code");
             await fetch("/api/save")
                 .then(async function (resp) {
                     list.innerHTML = "";
@@ -49,6 +42,8 @@
         }
 
         async function dss_code_show() {
+            let list = document.querySelector("#dss_save_list");
+            let code = document.querySelector("#dss_save_code");
             let name = list.value;
             if (name.length > 0) {
                 let resp = await fetch(`/api/save/${name}`);
@@ -60,8 +55,13 @@
             }
         }
 
-        dss_list_load();
-    </script>
-</body>
-
-</html>
+        $(document).ready(function() {
+            $("#dss_save_list").on("change", dss_code_show);
+            $("#dss_save_load").on("click", dss_list_load);
+            $("#dss_code_load").on("click", function() {
+                Save.deserialize(document.querySelector("#dss_save_code").value);
+            });
+            $("#dss_save_load").click();
+        });
+    <</script>>
+<</widget>>
