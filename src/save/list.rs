@@ -1,16 +1,15 @@
-use axum::{extract::State, response::Html};
+use axum::{extract::State, response::Html, Json};
 use chrono::TimeZone;
+use serde::Serialize;
 
 use crate::{auth::User, Cfg};
 
 #[instrument(skip(state))]
-pub async fn save_list(State(state): State<Cfg>, User(user): User) -> Html<String> {
-    const TEMPLATE: &str = include_str!("../../html/savelist.html");
-    let mut list = vec![];
-
+pub async fn list(State(state): State<Cfg>, User(user): User) -> Json<Vec<Save>> {
     let save_dir = state.save_dir.join(user);
     debug!(?save_dir, "存档目录");
 
+    let mut list = vec![];
     if save_dir.exists() {
         if let Ok(mut files) = tokio::fs::read_dir(&save_dir).await {
             while let Ok(Some(file)) = files.next_entry().await {
@@ -26,12 +25,22 @@ pub async fn save_list(State(state): State<Cfg>, User(user): User) -> Html<Strin
                         .unwrap_or_default();
 
                     let name = file.file_name().to_string_lossy().to_string();
-                    list.push(format!(r#"<option value="{name}">{name}{time}</option>"#));
+                    list.push(Save { name, time });
                 }
             }
         }
     }
-    let list: String = list.join("");
 
-    Html(TEMPLATE.replace("{list}", &list))
+    Json(list)
+}
+
+pub async fn page() -> Html<&'static str> {
+    const TEMPLATE: &str = include_str!("../../html/savelist.html");
+    Html(TEMPLATE)
+}
+
+#[derive(Debug, Serialize)]
+pub struct Save {
+    pub name: String,
+    pub time: String,
 }

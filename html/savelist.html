@@ -9,28 +9,58 @@
 
 <body>
     <div>
-        <select id="save_list" onchange="show()" autocomplete="off">
+        <select id="dss_save_list" onchange="show()" autocomplete="off">
             <option value="" selected>请选择存档</option>
-            {list}
         </select>
+        <button onclick="load()">刷新</button>
     </div>
     <div>
         <p>存档码</p>
-        <textarea id="save_data" cols="100" rows="20" autocomplete="off"></textarea>
+        <textarea id="dss_save_code" cols="100" rows="20" autocomplete="off"></textarea>
     </div>
     <script lang="JavaScript">
+        let list = document.querySelector("#dss_save_list");
+        let code = document.querySelector("#dss_save_code");
+
+        async function load() {
+            await fetch("/api/save")
+                .then(async function (resp) {
+                    list.innerHTML = "";
+
+                    if (resp.ok) {
+                        let l = await resp.json();
+                        if (l.length === 0) {
+                            code.value = "目前没有存档";
+                        } else {
+
+                            l.forEach(save => {
+                                let option = document.createElement("option");
+                                option.value = save.name;
+                                option.textContent = `${save.name} ${save.time}`;
+                                list.appendChild(option);
+                            });
+
+                            await show();
+                        }
+                    } else {
+                        code.value = "加载存档列表失败";
+                    }
+                });
+        }
+
         async function show() {
-            let name = document.querySelector("#save_list").value;
-            let text = document.querySelector("#save_data");
+            let name = list.value;
             if (name.length > 0) {
                 let resp = await fetch(`/save/${name}`);
                 if (resp.ok) {
-                    text.value = await resp.text();
+                    code.value = await resp.text();
                 }
             } else {
-                text.value = "";
+                code.value = "";
             }
         }
+
+        load();
     </script>
 </body>
 
