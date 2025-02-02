@@ -5,6 +5,11 @@ Save.onSave.add(function (save, details) {
     if (details.type === "slot" || details.type === "autosave") {
         new Promise(r => setTimeout(r, 1))
             .then(async function () {
+                if (save.state.history) {
+                    save.state.delta = State.deltaEncode(save.state.history);
+                    delete save.state.history;
+                }
+
                 let details = [];
                 // 获取当前存档信息
                 if (idb.active) {
