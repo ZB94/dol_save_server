@@ -14,7 +14,7 @@
       "params": [
         {
           "passage": "overlayReplace",
-          "findRegex": "<<toggleTab>>\n\\s*<<replace #customOverlayContent>><<optionsExportImport>><</replace>>",
+          "findRegex": "<<toggleTab>>\\s*<<replace #customOverlayContent>><<optionsExportImport>><</replace>>",
           "replace": "$&<</button>><<button \"云存档\">><<toggleTab>><<replace #customOverlayContent>><<dss_save_list>><</replace>>"
         }
       ]
