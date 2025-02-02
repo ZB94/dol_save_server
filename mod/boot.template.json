@@ -15,7 +15,7 @@
         {
           "passage": "overlayReplace",
           "findRegex": "<<toggleTab>>\n\\s*<<replace #customOverlayContent>><<optionsExportImport>><</replace>>",
-          "replace": "<<toggleTab>><<replace #customOverlayContent>><<optionsExportImport>><</replace>><</button>><<button \"云存档\">><<toggleTab>><<replace #customOverlayContent>><<dss_save_list>><</replace>>"
+          "replace": "$&<</button>><<button \"云存档\">><<toggleTab>><<replace #customOverlayContent>><<dss_save_list>><</replace>>"
         }
       ]
     }
