@@ -1,6 +1,11 @@
 # DoL Save Server
 
-一个用于适用于[Degrees of Lewdity](https://github.com/Eltirosto/Degrees-of-Lewdity-Chinese-Localization)的Web服务程序, 提供在游戏存档时同时在本地创建对应存档文件(需要模组加载器并加载配套模组)
+一个用于适用于[Degrees of Lewdity](https://github.com/Eltirosto/Degrees-of-Lewdity-Chinese-Localization)的Web服务程序
+
+## 主要功能
+
+1. 在游戏存档时同步在服务端创建对应存档文件(需要模组加载器并加载配套模组), 并可随时查看和加载
+2. 提供简单的用户认证机制(需手动在配置文件中启用), 启用后需要登录才能开始游戏, 且存档根据用户分开保存
 
 ![云存档](./images/云存档.jpg)
 
