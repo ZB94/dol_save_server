@@ -7,6 +7,7 @@ authors = ["C113<949536395@qq.com>"]
 [dependencies]
 axum = { version = "0.8.1", features = [] }
 axum-server = { version = "0.7.1", features = ["tls-rustls-no-provider"] }
+base64 = "0.22.1"
 chrono = { version = "0.4.39", default-features = false, features = [
     "clock",
     "std",

@@ -1,4 +1,5 @@
 use axum::{extract::State, http::StatusCode, Json};
+use base64::Engine;
 use serde::Deserialize;
 
 use crate::{auth::User, Cfg};
@@ -37,9 +38,12 @@ pub async fn save(
     let save_path = save_dir.join(file_name);
 
     debug!("开始压缩存档数据");
-    let mut data = lz_str::compress_to_base64(&save);
-    data += &lz_str::compress_to_base64(&format!("\"{}\": {}", story, data.len()));
-    debug!("存档压缩结束");
+    let mut data = base64::prelude::BASE64_STANDARD.encode(lz_str::compress_to_uint8_array(&save));
+    debug!(data_len = data.len(), "存档数据压缩完成");
+    let metadata = format!("{{ \"{}\": {} }}", story, data.len());
+    debug!(?metadata, "开始压缩元数据");
+    data += &base64::prelude::BASE64_STANDARD.encode(lz_str::compress_to_uint8_array(&metadata));
+    debug!("元数据压缩完成");
 
     if let Err(error) = tokio::fs::write(&save_path, data).await {
         const MSG: &str = "存档文件保存失败";
