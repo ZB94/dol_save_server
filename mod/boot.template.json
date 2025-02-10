@@ -10,7 +10,7 @@
     {
       "modName": "TweeReplacer",
       "addonName": "TweeReplacerAddon",
-      "modVersion": "1.6.1",
+      "modVersion": "^1.6.1",
       "params": [
         {
           "passage": "overlayReplace",
@@ -23,7 +23,7 @@
   "dependenceInfo": [
     {
       "modName": "TweeReplacer",
-      "version": "1.6.1"
+      "version": "^1.6.1"
     }
   ]
 }
