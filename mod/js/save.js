@@ -42,7 +42,10 @@ Save.onSave.add(function (save, details) {
                 $.post({
                     url: "/api/save",
                     data: JSON.stringify(data),
-                    contentType: "application/json"
+                    contentType: "application/json",
+                    error: () => {
+                        window.alert("存档上传失败");
+                    }
                 });
             });
     }
