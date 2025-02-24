@@ -10,6 +10,8 @@ def main [
         rm -f $path
     }
 
+    conv_savelist
+
     let boot = "./mod/boot.json"
     mut cfg = (open "./mod/boot.template.json")
     $cfg.version = (open "Cargo.toml") | get package.version
@@ -34,9 +36,6 @@ def main [
         "additionDir"
     ] {
         if $key in $cfg {
-            # for file in ($cfg | get $key) {
-            #     $files = $files | append ("./mod" | path join $file)
-            # }
             $files = $files | append ($cfg | get $key)
         }
     }
@@ -44,4 +43,20 @@ def main [
     print $files
 
     7z a "-tzip" "-mm=Deflate" "-mx=9" $path ...$files
+}
+
+def conv_savelist [] {
+    open html/savelist.html | 
+    lines | 
+    skip until { |l| $l == "<body>" } | 
+    take until { |l| $l == "</html>" }  | 
+    insert 0 ":: dss_save_list [widget]\n" |
+    str join "\n" |
+    str replace '<body>' '<<widget "dss_save_list">>' |
+    str replace '</body>' '<</widget>>' |
+    str replace -r '<script.*?>' '<<script>>' |
+    str replace '</script>' '<</script>>' |
+    str replace -r -a '<!-- (.*?) -->' '$1' |
+    str replace -r -a '//\s+' '' |
+    save -f mod/twee/dss_save_list.twee
 }

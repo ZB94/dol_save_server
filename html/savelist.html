@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 
 <head>
     <meta charset="UTF-8">
@@ -9,20 +9,24 @@
 
 <body>
     <div>
-        <select id="dss_save_list" onchange="dss_code_show()" autocomplete="off">
+        <select id="dss_list" autocomplete="off">
             <option value="" selected>请选择存档</option>
         </select>
-        <button onclick="dss_list_load()">刷新</button>
+        <button id="dss_refresh">刷新</button>
+        <button id="dss_delete" style="color: red;">删除</button>
+        <!-- <button id="dss_load">加载存档</button> -->
+    </div>
+    <div>
+        <p id="dss_msg" style="color: red;"></p>
     </div>
     <div>
         <p>存档码</p>
-        <textarea id="dss_save_code" cols="100" rows="20" autocomplete="off"></textarea>
+        <textarea id="dss_code" cols="100" rows="20" autocomplete="off" readonly></textarea>
     </div>
     <script type="text/javascript">
-        let list = document.querySelector("#dss_save_list");
-        let code = document.querySelector("#dss_save_code");
-
         async function dss_list_load() {
+            let list = document.querySelector("#dss_list");
+            let code = document.querySelector("#dss_code");
             await fetch("/api/save")
                 .then(async function (resp) {
                     list.innerHTML = "";
@@ -49,6 +53,8 @@
         }
 
         async function dss_code_show() {
+            let list = document.querySelector("#dss_list");
+            let code = document.querySelector("#dss_code");
             let name = list.value;
             if (name.length > 0) {
                 let resp = await fetch(`/api/save/${name}`);
@@ -60,7 +66,30 @@
             }
         }
 
-        dss_list_load();
+        async function dss_save_delete() {
+            let list = document.querySelector("#dss_list");
+            let name = list.value;
+            let msg = "";
+            if (name.length > 0) {
+                let resp = await fetch(`/api/save/${name}`, { method: "DELETE" });
+                msg = await resp.text();
+            } else {
+                msg = "请选择有效存档";
+            }
+            document.querySelector("#dss_msg").textContent = msg;
+            await dss_list_load();
+        }
+
+        async function dss_init() {
+            document.querySelector("#dss_list").onchange = dss_code_show;
+            document.querySelector("#dss_refresh").onclick = dss_list_load;
+            document.querySelector("#dss_delete").onclick = dss_save_delete;
+            // document.querySelector("#dss_load").onclick = () => Save.deserialize(document.querySelector("#dss_code").value);
+
+            await document.querySelector("#dss_refresh").click();
+        }
+
+        setTimeout(dss_init, 0);
     </script>
 </body>
 
