@@ -46,6 +46,7 @@ def main [
 }
 
 def conv_savelist [] {
+    mkdir mod/twee
     open html/savelist.html | 
     lines | 
     skip until { |l| $l == "<body>" } | 
