@@ -4,6 +4,7 @@ use serde::Serialize;
 
 use crate::{auth::User, Cfg};
 
+/// 获取存档列表
 #[instrument(skip(state))]
 pub async fn list(State(state): State<Cfg>, User(user): User) -> Json<Vec<Save>> {
     let save_dir = state.save_dir.join(user);
@@ -34,6 +35,7 @@ pub async fn list(State(state): State<Cfg>, User(user): User) -> Json<Vec<Save>>
     Json(list)
 }
 
+/// 独立存档页面
 pub async fn page() -> Html<&'static str> {
     const TEMPLATE: &str = include_str!("../../html/savelist.html");
     Html(TEMPLATE)

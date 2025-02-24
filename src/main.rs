@@ -22,23 +22,7 @@ pub type Cfg = Arc<Config>;
 async fn main() -> Result<(), Box<dyn Error>> {
     init_log();
 
-    let config_path =
-        Path::new(&std::env::var("DOL_SAVE_SERVER").unwrap_or_else(|_| Config::PATH.to_string()))
-            .to_path_buf();
-    if !config_path.exists() {
-        info!("配置文件不存在, 生成默认配置");
-        tokio::fs::write(&config_path, Config::DEFAULT)
-            .await
-            .inspect_err(|error| error!(%error, "生成默认配置文件失败"))?;
-    }
-
-    let config = tokio::fs::read_to_string(&config_path)
-        .await
-        .inspect_err(|error| error!(%error, ?config_path, "读取配置文件失败"))?;
-    let config = toml::from_str::<Config>(&config)
-        .inspect_err(|error| error!(%error, ?config_path, "解析配置文件失败"))?;
-
-    info!(?config, "当前配置");
+    let config = Config::load().await?;
 
     let index = config.root.join(&config.index);
     let root = config.root.clone();

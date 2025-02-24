@@ -4,15 +4,29 @@ use serde::Deserialize;
 
 use crate::{auth::User, Cfg};
 
+/// 存档信息
 #[derive(Debug, Deserialize)]
 pub struct Save {
+    /// 存档槽位
+    ///
+    /// `0`表示自动存档槽位
     pub slot: u32,
+    /// 存档名称
     pub name: String,
+    /// 实际存档内容
     pub save: String,
+    /// 游戏名称
     pub story: String,
+    /// 存档方式
+    ///
+    /// 只影响存档名称
+    ///
+    /// `true`: IndexedDB
+    /// `false`: 浏览器本地存储
     pub new: bool,
 }
 
+/// 保存存档
 #[instrument(skip(save, state))]
 pub async fn save(
     State(state): State<Cfg>,
