@@ -2,6 +2,8 @@ dir = "target/game"
 repo = "Eltirosto/Degrees-of-Lewdity-Chinese-Localization"
 pattern = "DoL-ModLoader-.+?-v[^-]+\\.zip"
 
+# download_proxy = "https://gh-proxy.com"
+
 [[mods]]
 repo = "Eltirosto/Degrees-of-Lewdity-Chinese-Localization"
 pattern = "ModI18N.+\\.mod\\.zip"
