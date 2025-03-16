@@ -1,0 +1,11 @@
+dir = "target/game"
+repo = "Eltirosto/Degrees-of-Lewdity-Chinese-Localization"
+pattern = "DoL-ModLoader-.+?-v[^-]+\\.zip"
+
+[[mods]]
+repo = "Eltirosto/Degrees-of-Lewdity-Chinese-Localization"
+pattern = "ModI18N.+\\.mod\\.zip"
+
+[[mods]]
+repo = "Eltirosto/Degrees-of-Lewdity-Chinese-Localization"
+pattern = "GameOriginalImagePack-.+\\.mod\\.zip"
