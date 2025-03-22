@@ -67,10 +67,9 @@ impl FromRequestParts<Cfg> for User {
     async fn from_request_parts(parts: &mut Parts, state: &Cfg) -> Result<Self, Self::Rejection> {
         if state.auth.enable {
             let session = Session::from_request_parts(parts, state).await?;
-            if let Ok(Some(user)) = session.get::<String>(Self::KEY).await {
-                Ok(User(user))
-            } else {
-                Err((StatusCode::UNAUTHORIZED, "登入验证未通过"))
+            match session.get::<String>(Self::KEY).await {
+                Ok(Some(user)) => Ok(User(user)),
+                _ => Err((StatusCode::UNAUTHORIZED, "登入验证未通过")),
             }
         } else {
             Ok(User(Default::default()))
