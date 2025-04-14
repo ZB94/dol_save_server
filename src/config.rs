@@ -25,6 +25,9 @@ pub struct Config {
     /// TLS 配置
     #[serde(default)]
     pub tls: Tls,
+    /// PWA 配置
+    #[serde(default)]
+    pub pwa: Pwa,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
@@ -54,6 +57,11 @@ pub struct Tls {
     pub cert: String,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+pub struct Pwa {
+    pub enable: bool,
+    pub source: String,
+}
 impl Config {
     /// 默认加载的存档路径
     ///

@@ -5,11 +5,13 @@ use std::{error::Error, path::Path, sync::Arc};
 
 mod auth;
 mod config;
+mod pwa;
 mod save;
 
 use axum::Router;
 use axum_server::tls_rustls::{RustlsAcceptor, RustlsConfig};
 use config::Config;
+use pwa::init_pwa;
 use tower_http::{
     compression::CompressionLayer,
     services::{ServeDir, ServeFile},
@@ -26,13 +28,20 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let index = config.root.join(&config.index);
     let root = config.root.clone();
+    let mut app = Router::new();
 
     if config.init_mod {
         init_mod(&root)?;
     }
 
+    if config.pwa.enable {
+        init_pwa(&config)?;
+        let sw_path = config.root.join(&config.pwa.source).join("sw.js");
+        app = app.route_service("/sw.js", ServeFile::new(config.root.join(sw_path)));
+    }
+
     let cfg = Cfg::new(config);
-    let mut app = Router::new()
+    app = app
         // 存档相关接口
         .merge(save::router())
         // 主页

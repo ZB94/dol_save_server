@@ -6,7 +6,7 @@ index = "Degrees of Lewdity.html"
 
 # 服务地址
 # 如果需要局域网的其他设备访问, 则需要将IP地址修改为本机的局域网地址或直接使用`0.0.0.0`绑定本机所有地址
-bind = "127.0.0.1:5000"
+bind = "0.0.0.0:5000"
 
 # 存档保存目录
 save_dir = "./save"
@@ -41,3 +41,10 @@ key = """
 cert = """
 替换为你的证书CERT PEM格式
 """
+
+# PWA相关配置
+[pwa]
+# 是否启用
+enable = true
+# pwa资源目录
+source = "./pwa"
