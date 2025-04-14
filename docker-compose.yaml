@@ -1,0 +1,10 @@
+services:
+  dol:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./save:/save
+    environment:
+      - TZ=Asia/Shanghai
+    restart: unless-stopped
