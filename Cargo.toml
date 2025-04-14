@@ -9,6 +9,7 @@ axum = { version = "0.8.1", features = [] }
 axum-server = { version = "0.7.1", features = ["tls-rustls-no-provider"] }
 base64 = "0.22.1"
 chrono = { version = "0.4.39", default-features = false, features = ["clock", "std"] }
+include_dir = "0.7.4"
 lz-str = "0.2.1"
 rustls = { version = "0.23.22", default-features = false, features = ["std", "ring"] }
 serde = { version = "1.0.217", features = ["derive"] }

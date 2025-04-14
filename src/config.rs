@@ -60,8 +60,8 @@ pub struct Tls {
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Pwa {
     pub enable: bool,
-    pub source: String,
 }
+
 impl Config {
     /// 默认加载的存档路径
     ///

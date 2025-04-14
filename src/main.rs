@@ -36,13 +36,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
         init_mod(&root)?;
     }
 
-    if config.pwa.enable {
-        init_pwa(&config)?;
-        let sw_path = config.root.join(&config.pwa.source).join("sw.js");
-        app = app.route_service("/sw.js", ServeFile::new(config.root.join(sw_path)));
+    let cfg = Cfg::new(config);
+
+    if cfg.pwa.enable {
+        init_pwa(&cfg)?;
     }
 
-    let cfg = Cfg::new(config);
     app = app
         // 存档相关接口
         .merge(save::router())
