@@ -22,7 +22,7 @@ pub fn init_pwa(config: &Config) -> Result<(), Box<dyn Error>> {
 
     // insert mainfest
     const MANIFEST_LINK: &str =
-        "<link crossorigin=\"use-credentials\" rel=\"manifest\" href=\"manifest.json\">\n";
+        "<link crossorigin=\"use-credentials\" rel=\"manifest\" href=\"/pwa/manifest.json\">\n";
     if !index_html.contains(MANIFEST_LINK) {
         const MANIFEST_MARKER: &str = r#"<meta charset="UTF-8" />"#;
         let insert_index = index_html.find(MANIFEST_MARKER).ok_or("marker not find")?;
