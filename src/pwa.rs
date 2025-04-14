@@ -11,12 +11,19 @@ pub fn init_pwa(config: &Config) -> Result<(), Box<dyn Error>> {
     file.read_to_string(&mut index_html)?;
 
     // insert mainfest
-    let mainfest_marker = "<meta charset=\"UTF-8\" />";
-    let insert_index = index_html.find(mainfest_marker).ok_or("marker not find")?;
+    let manifest_marker = "<meta charset=\"UTF-8\" />";
+    let insert_index = index_html.find(manifest_marker).ok_or("marker not find")?;
+
+    //去掉第一个字符 '.'
+    let manifest = config
+        .pwa
+        .source
+        .strip_prefix('.')
+        .unwrap_or(&config.pwa.source);
 
     let manifest_link = format!(
         "<link rel=\"manifest\" href=\"{}/manifest.json\">\n",
-        config.pwa.source
+        manifest
     );
     index_html.insert_str(insert_index, &manifest_link);
 
