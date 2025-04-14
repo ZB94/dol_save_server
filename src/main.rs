@@ -8,15 +8,17 @@ mod config;
 mod pwa;
 mod save;
 
-use axum::Router;
+use axum::{Router, http::HeaderValue};
 use axum_server::tls_rustls::{RustlsAcceptor, RustlsConfig};
 use config::Config;
 use pwa::init_pwa;
+use tower::ServiceBuilder;
 use tower_http::{
     compression::CompressionLayer,
     services::{ServeDir, ServeFile},
+    set_header::SetResponseHeaderLayer,
 };
-use tracing_subscriber::{fmt::time::ChronoLocal, EnvFilter};
+use tracing_subscriber::{EnvFilter, fmt::time::ChronoLocal};
 
 pub type Cfg = Arc<Config>;
 
@@ -54,11 +56,18 @@ async fn main() -> Result<(), Box<dyn Error>> {
     }
     let app: Router<()> = app
         .layer(
-            CompressionLayer::new()
-                .br(true)
-                .deflate(true)
-                .gzip(true)
-                .zstd(true),
+            ServiceBuilder::new()
+                .layer(SetResponseHeaderLayer::overriding(
+                    axum::http::header::CACHE_CONTROL,
+                    HeaderValue::from_static("no-store"),
+                ))
+                .layer(
+                    CompressionLayer::new()
+                        .br(true)
+                        .deflate(true)
+                        .gzip(true)
+                        .zstd(true),
+                ),
         )
         .with_state(cfg.clone());
 
