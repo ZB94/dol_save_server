@@ -1,5 +1,5 @@
 # 游戏目录
-root = "./"
+root = "/game"
 
 # 访问"/"时的默认文件名
 index = "Degrees of Lewdity.html"
@@ -9,7 +9,7 @@ index = "Degrees of Lewdity.html"
 bind = "0.0.0.0:5000"
 
 # 存档保存目录
-save_dir = "./save"
+save_dir = "/save"
 
 # 启用时检查和修改"modList.json", 并更新存档模组
 init_mod = true

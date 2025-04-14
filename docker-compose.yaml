@@ -4,7 +4,10 @@ services:
     ports:
       - "5000:5000"
     volumes:
+      # 存档目录映射
       - ./save:/save
+      # 游戏目录映射
+      - ./game:/game
     environment:
       - TZ=Asia/Shanghai
     restart: unless-stopped
