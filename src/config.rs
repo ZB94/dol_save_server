@@ -69,7 +69,7 @@ impl Config {
     pub const PATH: &str = "./dol_save_server.toml";
 
     /// 默认存档内容
-    pub const DEFAULT: &str = include_str!("../dol_save_server.toml");
+    pub const DEFAULT: &str = include_str!("../dol_save_server_example.toml");
 
     /// 加载配置
     pub async fn load() -> Result<Self, Box<dyn Error>> {
