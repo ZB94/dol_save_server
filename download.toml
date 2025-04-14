@@ -1,4 +1,4 @@
-dir = "target/game"
+dir = "game"
 repo = "Eltirosto/Degrees-of-Lewdity-Chinese-Localization"
 pattern = "DoL-ModLoader-.+?-v[^-]+\\.zip"
 
