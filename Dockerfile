@@ -1,11 +1,14 @@
 FROM clux/muslrust:stable AS build-env
-COPY ./ /
-RUN cargo build --release --target x86_64-unknown-linux-musl
+COPY ./ .
+RUN target="$(uname -m)-unknown-linux-musl" && \
+    cargo build --release --target $target && \
+    cp target/$target/release/dol_save_server /
 
 FROM alpine:3.21
 
+WORKDIR /
 COPY ./dol_save_server_docker.toml /dol_save_server.toml
-COPY --from=build-env /target/x86_64-unknown-linux-musl/release/dol_save_server /
+COPY --from=build-env /dol_save_server /
 EXPOSE 5000
 
 VOLUME [ "/save" ]
