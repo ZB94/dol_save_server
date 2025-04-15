@@ -45,4 +45,4 @@ cert = """
 # PWA相关配置
 [pwa]
 # 是否启用
-enable = true
+enable = false

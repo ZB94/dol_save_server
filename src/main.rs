@@ -38,9 +38,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let cfg = Cfg::new(config);
 
-    if cfg.pwa.enable {
-        init_pwa(&cfg)?;
-    }
+    // PWA
+    app = init_pwa(app, &cfg)?;
 
     app = app
         // 存档相关接口
