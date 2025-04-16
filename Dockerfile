@@ -4,7 +4,7 @@ RUN target="$(uname -m)-unknown-linux-musl" && \
     cargo build --release --target $target && \
     cp target/$target/release/dol_save_server /
 
-FROM alpine:3.21
+FROM scratch
 
 WORKDIR /
 COPY ./dol_save_server_docker.toml /dol_save_server.toml
