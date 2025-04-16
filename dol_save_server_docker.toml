@@ -43,6 +43,7 @@ cert = """
 """
 
 # PWA相关配置
+# PWA 仅在`localhost`下或启用`tls`(且CA必须为系统信任的)时有效
 [pwa]
 # 是否启用
 enable = false

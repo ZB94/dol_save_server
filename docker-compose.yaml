@@ -8,6 +8,8 @@ services:
       - ./save:/save
       # 游戏目录映射
       - ./game:/game
+      # 服务配置
+      - ./dol_save_server.toml:/dol_save_server.toml
     environment:
       - TZ=Asia/Shanghai
     restart: unless-stopped

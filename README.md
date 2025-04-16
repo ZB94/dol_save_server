@@ -47,7 +47,7 @@
 ### Docker 部署
 
 1. 下载游戏并保存到当前目录的`game`文件夹中
-2. 根据需要修改`dol_save_server_docker.toml`中的内容
+2. 复制`dol_save_server_docker.toml`并重命名为`dol_save_server.toml`, 并根据需要修改其中的内容
 3. 执行指令`docker compose up -d`
 
 默认保存的 `save` 文件夹会自动映射
