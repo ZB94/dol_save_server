@@ -6,7 +6,6 @@ use axum::{
     response::{IntoResponse, Response},
     routing::{get, post},
 };
-use tower::ServiceBuilder;
 use tower_sessions::{Expiry, MemoryStore, Session, SessionManagerLayer};
 
 use crate::Cfg;
@@ -24,18 +23,17 @@ pub fn route(cfg: Cfg) -> Router<Cfg> {
     Router::new()
         // 在线检查
         .route("/alive", get(auth::alive))
-        // 登录接口
-        .route("/login", post(auth::login))
         // 保存存档/存档列表
         .route("/save", post(save::save).get(save::list))
         // 获取/删除存档
         .route("/save/{name}", get(save::code).delete(save::remove))
         // 权限校验中间件
-        .layer(
-            ServiceBuilder::new()
-                .layer(session_layer)
-                .layer(axum::middleware::from_fn_with_state(cfg, auth_layer)),
-        )
+        .layer(axum::middleware::from_fn_with_state(cfg, auth_layer))
+        // 登录接口
+        .route("/login", post(auth::login))
+        // session 功能
+        .layer(session_layer)
+        // PWA 是否启用接口
         .route("/pwa/enabled", get(pwa::enabled))
 }
 
@@ -46,13 +44,11 @@ async fn auth_layer(
     mut request: Request,
     next: Next,
 ) -> Response {
-    const WHITE_LIST: &[&str] = &["/login"];
-
     debug!(uri = %request.uri(), "auth");
 
     let user = session.get::<String>(User::KEY).await.unwrap_or_default();
 
-    if !cfg.auth.enable || WHITE_LIST.contains(&request.uri().path()) || user.is_some() {
+    if !cfg.auth.enable || user.is_some() {
         debug!(uri = %request.uri(), "鉴权通过");
         request
             .extensions_mut()

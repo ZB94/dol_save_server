@@ -39,17 +39,31 @@ Save.onSave.add(function (save, details) {
                     new: idb.active
                 };
                 // 上传
-                $.post({
-                    url: "/api/save",
-                    data: JSON.stringify(data),
-                    contentType: "application/json",
-                    error: () => {
-                        window.alert("存档上传失败");
+                fetch("/api/save", {
+                    method: "POST",
+                    body: JSON.stringify(data),
+                    headers: {
+                        "Content-Type": "application/json",
                     }
-                });
+                })
+                    .then(resp => {
+                        if (!resp.ok) {
+                            window.alert(`云存档上传失败`);
+                            console.log(resp);
+                        }
+                    });
             });
     }
 })
+
+// 判断登录状态是否正常
+fetch("/api/alive")
+    .then(resp => {
+        if (!resp.ok) {
+            window.alert("云存档功能需要登录才能正常使用, 请在存档界面的云存档处登录");
+        }
+    });
+
 
 // PWA
 fetch("/api/pwa/enabled")
@@ -59,6 +73,6 @@ fetch("/api/pwa/enabled")
             $('<link crossorigin="use-credentials" rel="manifest" href="/pwa/manifest.json">').appendTo("head");
             $('<script>if (typeof navigator.serviceWorker !== "undefined") { navigator.serviceWorker.register("/sw.js"); }</script>').appendTo("body");
         }
-    })
+    });
 
 
