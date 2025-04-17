@@ -1,11 +1,12 @@
 use axum::{
     Json, Router,
     extract::{Request, State},
-    http::StatusCode,
+    http::{HeaderValue, StatusCode},
     middleware::Next,
     response::{IntoResponse, Response},
     routing::{get, post},
 };
+use tower_http::set_header::SetResponseHeaderLayer;
 use tower_sessions::{Expiry, MemoryStore, Session, SessionManagerLayer};
 
 use crate::Cfg;
@@ -35,6 +36,11 @@ pub fn route(cfg: Cfg) -> Router<Cfg> {
         .layer(session_layer)
         // PWA 是否启用接口
         .route("/pwa/enabled", get(pwa::enabled))
+        // 所有接口请求禁用缓存
+        .layer(SetResponseHeaderLayer::overriding(
+            axum::http::header::CACHE_CONTROL,
+            HeaderValue::from_static("no-store"),
+        ))
 }
 
 #[instrument(skip_all)]

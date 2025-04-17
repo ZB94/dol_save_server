@@ -7,14 +7,13 @@ mod api;
 mod config;
 mod web;
 
-use axum::{Router, http::HeaderValue};
+use axum::Router;
 use axum_server::tls_rustls::{RustlsAcceptor, RustlsConfig};
 use config::Config;
 use tower::{ServiceBuilder, service_fn};
 use tower_http::{
     compression::CompressionLayer,
     services::{ServeDir, ServeFile},
-    set_header::SetResponseHeaderLayer,
 };
 use tracing_subscriber::{EnvFilter, fmt::time::ChronoLocal};
 
@@ -46,18 +45,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let app: Router<()> = app
         .layer(
-            ServiceBuilder::new()
-                .layer(SetResponseHeaderLayer::overriding(
-                    axum::http::header::CACHE_CONTROL,
-                    HeaderValue::from_static("no-store"),
-                ))
-                .layer(
-                    CompressionLayer::new()
-                        .br(true)
-                        .deflate(true)
-                        .gzip(true)
-                        .zstd(true),
-                ),
+            ServiceBuilder::new().layer(
+                CompressionLayer::new()
+                    .br(true)
+                    .deflate(true)
+                    .gzip(true)
+                    .zstd(true),
+            ),
         )
         .with_state(cfg.clone());
 
