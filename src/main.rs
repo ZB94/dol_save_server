@@ -3,16 +3,13 @@ extern crate tracing;
 
 use std::{error::Error, path::Path, sync::Arc};
 
-mod auth;
+mod api;
 mod config;
-mod pwa;
-mod save;
 mod web;
 
 use axum::{Router, http::HeaderValue};
 use axum_server::tls_rustls::{RustlsAcceptor, RustlsConfig};
 use config::Config;
-use pwa::init_pwa;
 use tower::{ServiceBuilder, service_fn};
 use tower_http::{
     compression::CompressionLayer,
@@ -39,20 +36,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let cfg = Cfg::new(config);
 
-    // PWA
-    app = init_pwa(app)?;
-
     app = app
-        // 存档相关接口
-        .merge(save::router())
+        // API 接口
+        .nest("/api", api::route(cfg.clone()))
         // 主页
         .route_service("/", ServeFile::new(index))
         // 其他文件
         .fallback_service(ServeDir::new(root).fallback(service_fn(web::web_service)));
 
-    if cfg.auth.enable {
-        app = auth::router(app, cfg.tls.enable).await;
-    }
     let app: Router<()> = app
         .layer(
             ServiceBuilder::new()

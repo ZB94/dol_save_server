@@ -1,8 +1,8 @@
-use axum::{extract::State, http::StatusCode, Json};
+use axum::{Extension, Json, extract::State, http::StatusCode};
 use base64::Engine;
 use serde::Deserialize;
 
-use crate::{auth::User, Cfg};
+use crate::{Cfg, api::User};
 
 /// 存档信息
 #[derive(Debug, Deserialize)]
@@ -30,7 +30,7 @@ pub struct Save {
 #[instrument(skip(save, state))]
 pub async fn save(
     State(state): State<Cfg>,
-    User(user): User,
+    Extension(User(user)): Extension<User>,
     Json(Save {
         slot,
         name,

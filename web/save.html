@@ -9,20 +9,52 @@
 
 <body>
     <div>
-        <select id="dss_list" autocomplete="off">
-            <option value="" selected>请选择存档</option>
-        </select>
-        <button id="dss_refresh">刷新</button>
-        <button id="dss_delete" style="color: red;">删除</button>
-        <!-- <button id="dss_load">加载存档</button> -->
-    </div>
-    <div>
         <p id="dss_msg" style="color: red;"></p>
     </div>
-    <div>
-        <p>存档码</p>
-        <textarea id="dss_code" cols="100" rows="20" autocomplete="off" readonly></textarea>
+
+    <div id="dss_div_login" hidden>
+        <form>
+            <div>
+                <label for="dss_username">用户名: </label>
+                <br />
+                <input
+                    style="width: 20em;"
+                    type="text" id="dss_username"
+                    autocomplete="off" />
+            </div>
+            <div>
+                <label for="dss_password">密码: </label>
+                <br />
+                <input
+                    style="width: 20em;"
+                    type="password"
+                    id="dss_password"
+                    autocomplete="off" />
+            </div>
+            <div style="margin-top: 5px;">
+                <button type="reset">重置</button>
+                <button type="button" id="dss_login">登入</button>
+            </div>
+        </form>
     </div>
+
+    <div id="dss_div_save">
+        <div>
+            <select id="dss_list" autocomplete="off">
+                <option value selected>请选择存档</option>
+            </select>
+            <button id="dss_refresh">刷新</button>
+            <button id="dss_delete" style="color: red;">删除</button>
+            <!-- <button id="dss_load">加载存档</button> -->
+        </div>
+
+        <div>
+            <p>存档码</p>
+            <textarea id="dss_code" cols="100" rows="20" autocomplete="off"
+                readonly></textarea>
+        </div>
+    </div>
+
     <script type="text/javascript">
         async function dss_list_load() {
             let list = document.querySelector("#dss_list");
@@ -59,7 +91,7 @@
             if (name.length > 0) {
                 let resp = await fetch(`/api/save/${name}`);
                 if (resp.ok) {
-                    code.value = await resp.text();
+                    code.value = await resp.json();
                 }
             } else {
                 code.value = "";
@@ -72,7 +104,7 @@
             let msg = "";
             if (name.length > 0) {
                 let resp = await fetch(`/api/save/${name}`, { method: "DELETE" });
-                msg = await resp.text();
+                msg = await resp.json();
             } else {
                 msg = "请选择有效存档";
             }
@@ -80,13 +112,54 @@
             await dss_list_load();
         }
 
+        async function dss_login() {
+            fetch("/api/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    username: document.querySelector("#dss_username").value,
+                    password: document.querySelector("#dss_password").value,
+                })
+            })
+            .then(async resp => {
+
+                if (resp.ok) {
+                    dss_show_save();
+                    document.querySelector("#dss_msg").textContent = "";
+                } else {
+                    document.querySelector("#dss_msg").textContent = await resp.json();
+                }
+            });
+        }
+
+        function dss_show_login() {
+            document.querySelector("#dss_div_login").hidden = false;
+            document.querySelector("#dss_div_save").hidden = true;
+        }
+
+        function dss_show_save() {
+            document.querySelector("#dss_div_login").hidden = true;
+            document.querySelector("#dss_div_save").hidden = false;
+            document.querySelector("#dss_refresh").click();
+        }
+
         async function dss_init() {
             document.querySelector("#dss_list").onchange = dss_code_show;
             document.querySelector("#dss_refresh").onclick = dss_list_load;
             document.querySelector("#dss_delete").onclick = dss_save_delete;
+            document.querySelector("#dss_login").onclick = dss_login;
             // document.querySelector("#dss_load").onclick = () => Save.deserialize(document.querySelector("#dss_code").value);
 
-            await document.querySelector("#dss_refresh").click();
+            fetch("/api/alive")
+                .then(resp => {
+                    if (resp.ok) {
+                        dss_show_save();
+                    } else {
+                        dss_show_login();
+                    }
+                });
         }
 
         setTimeout(dss_init, 0);

@@ -49,8 +49,8 @@ def conv_savelist [] {
     mkdir mod/twee
     open web/save.html |
     lines |
-    skip until { |l| $l == "<body>" } |
-    take until { |l| $l == "</html>" }  |
+    skip until { |l| $l =~ "<body>" } |
+    take until { |l| $l =~ "</html>" }  |
     insert 0 ":: dss_save_list [widget]\n" |
     str join "\n" |
     str replace '<body>' '<<widget "dss_save_list">>' |

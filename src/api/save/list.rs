@@ -1,12 +1,15 @@
-use axum::{Json, extract::State};
+use axum::{Extension, Json, extract::State};
 use chrono::TimeZone;
 use serde::Serialize;
 
-use crate::{Cfg, auth::User};
+use crate::{Cfg, api::User};
 
 /// 获取存档列表
 #[instrument(skip(state))]
-pub async fn list(State(state): State<Cfg>, User(user): User) -> Json<Vec<Save>> {
+pub async fn list(
+    State(state): State<Cfg>,
+    Extension(User(user)): Extension<User>,
+) -> Json<Vec<Save>> {
     let save_dir = state.save_dir.join(user);
     debug!(?save_dir, "存档目录");
 
