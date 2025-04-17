@@ -15,9 +15,8 @@
 
 1. 下载对应系统的压缩包
 2. 将压缩包解压到游戏目录
-3. 将 `dol_save_server_example.toml` 改名为 `dol_save_server.toml`
-4. 运行程序
-5. 打开浏览器, 访问[http://127.0.0.1:5000](http://127.0.0.1:5000)开始游戏
+3. 运行程序
+4. 打开浏览器, 访问[http://127.0.0.1:5000](http://127.0.0.1:5000)开始游戏
 
 后续如果存档, 则会生成对应的存档文件在游戏目录的`save`文件夹中.
 
@@ -42,7 +41,7 @@
 
 运行时如果不存在配置文件(`dol_save_server.toml`), 将会在运行目录生成默认配置文件, **修改配置后需要重启才能生效**.
 
-详细配置说明请查看[`dol_save_server.toml`](./dol_save_server.toml)
+详细配置说明请查看[`dol_save_server_example.toml`](./dol_save_server_example.toml)
 
 ### Docker 部署
 
