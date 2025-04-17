@@ -24,15 +24,15 @@ def main [
     mut files = [$boot]
 
     for key in [
-        "styleFileList", 
-        "scriptFileList", 
-        "tweeFileList", 
-        "imgFileList", 
-        "additionFile", 
-        "scriptFileList_inject_early", 
-        "scriptFileList_earlyload", 
-        "scriptFileList_preload", 
-        "additionBinaryFile", 
+        "styleFileList",
+        "scriptFileList",
+        "tweeFileList",
+        "imgFileList",
+        "additionFile",
+        "scriptFileList_inject_early",
+        "scriptFileList_earlyload",
+        "scriptFileList_preload",
+        "additionBinaryFile",
         "additionDir"
     ] {
         if $key in $cfg {
@@ -47,10 +47,10 @@ def main [
 
 def conv_savelist [] {
     mkdir mod/twee
-    open html/savelist.html | 
-    lines | 
-    skip until { |l| $l == "<body>" } | 
-    take until { |l| $l == "</html>" }  | 
+    open web/save.html |
+    lines |
+    skip until { |l| $l == "<body>" } |
+    take until { |l| $l == "</html>" }  |
     insert 0 ":: dss_save_list [widget]\n" |
     str join "\n" |
     str replace '<body>' '<<widget "dss_save_list">>' |

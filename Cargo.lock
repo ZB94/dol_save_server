@@ -312,6 +312,7 @@ dependencies = [
  "chrono",
  "include_dir",
  "lz-str",
+ "mime_guess",
  "rustls",
  "serde",
  "serde_json",

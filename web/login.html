@@ -42,26 +42,33 @@
         color: #eee;
         font-size: 110%;
         line-height: 1.75;
-        cursor: pointer;
         padding: 0.4em;
         transition-duration: 200ms;
         user-select: none;
-        -webkit-appearance: button;
+        text-transform: none;
+      }
+
+      button {
+        width: 100%;
+        max-width: 100px;
+        border: 1px solid #666;
+        background-color: #222;
+        color: #eee;
+        font-size: 110%;
+        line-height: 1.75;
+        padding: 0.4em;
+        user-select: none;
         text-transform: none;
       }
 
       input:hover {
         background-color: #333;
-        cursor: pointer;
       }
 
       label {
         color: white;
       }
 
-      #button {
-        max-width: 150px;
-      }
       div {
         margin-top: 15px;
       }
@@ -74,7 +81,8 @@
         alt="banner"
       />
     </div>
-    <form action="/login" method="post">
+
+    <form>
       <div>
         <label for="username">用户名: </label><br />
         <input type="text" name="username" id="username" autocomplete="off" />
@@ -88,12 +96,36 @@
           autocomplete="off"
         />
       </div>
+
       <div>
-        <input id="button" type="reset" value="重置" />
-        <input id="button" type="submit" value="登入" />
+        <button type="reset">重置</button>
+        <button type="button" onclick="login();" >登入</button>
       </div>
-      <p style="color: red">{message}</p>
     </form>
+
+    <p id="msg" style="color: red;"></p>
+
+    <script type="text/javascript">
+      function login() {
+        fetch("/api/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            username: document.querySelector("#username").value,
+            password: document.querySelector("#password").value,
+          })
+        })
+        .then(async resp => {
+          if (resp.ok) {
+            location.href = "/";
+            document.querySelector("#msg").textContent = "登入成功, 正在加载游戏..."
+          } else {
+            document.querySelector("#msg").textContent = await resp.text();
+          }
+        });
+      }
+    </script>
   </body>
 </html>
-

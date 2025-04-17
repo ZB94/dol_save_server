@@ -1,12 +1,12 @@
 mod login;
 
 use axum::{
+    Router,
     extract::{FromRequestParts, Request},
-    http::{request::Parts, StatusCode},
+    http::{StatusCode, request::Parts},
     middleware::Next,
     response::{IntoResponse, Redirect, Response},
-    routing::get,
-    Router,
+    routing::{get, post},
 };
 
 use tower::ServiceBuilder;
@@ -24,7 +24,7 @@ pub async fn router(router: Router<Cfg>, secure: bool) -> Router<Cfg> {
 
     router
         .route("/api/alive", get("OK"))
-        .route("/login", get(login).post(login))
+        .route("/api/login", post(login))
         .layer(
             ServiceBuilder::new()
                 .layer(session_layer)
@@ -32,19 +32,20 @@ pub async fn router(router: Router<Cfg>, secure: bool) -> Router<Cfg> {
         )
 }
 
+#[instrument(skip_all)]
 async fn verify(session: Session, request: Request, next: Next) -> Response {
-    trace!(?session, "鉴权");
-
     if session
         .get::<String>("user")
         .await
         .is_ok_and(|v| v.is_some())
-        || request.uri().path() == "/login"
+        || request.uri().path() == "/login.html"
+        || request.uri().path() == "/api/login"
     {
+        debug!(uri = %request.uri(), "鉴权通过");
         return next.run(request).await;
     }
 
-    Redirect::to("/login").into_response()
+    Redirect::to("/login.html").into_response()
 }
 
 #[derive(Debug, Clone)]

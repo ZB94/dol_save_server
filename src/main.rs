@@ -7,12 +7,13 @@ mod auth;
 mod config;
 mod pwa;
 mod save;
+mod web;
 
 use axum::{Router, http::HeaderValue};
 use axum_server::tls_rustls::{RustlsAcceptor, RustlsConfig};
 use config::Config;
 use pwa::init_pwa;
-use tower::ServiceBuilder;
+use tower::{ServiceBuilder, service_fn};
 use tower_http::{
     compression::CompressionLayer,
     services::{ServeDir, ServeFile},
@@ -39,7 +40,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let cfg = Cfg::new(config);
 
     // PWA
-    app = init_pwa(app, &cfg)?;
+    app = init_pwa(app)?;
 
     app = app
         // 存档相关接口
@@ -47,7 +48,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         // 主页
         .route_service("/", ServeFile::new(index))
         // 其他文件
-        .fallback_service(ServeDir::new(root));
+        .fallback_service(ServeDir::new(root).fallback(service_fn(web::web_service)));
 
     if cfg.auth.enable {
         app = auth::router(app, cfg.tls.enable).await;

@@ -5,8 +5,8 @@ mod remove;
 mod save;
 
 use axum::{
-    routing::{get, post},
     Router,
+    routing::{get, post},
 };
 
 use crate::Cfg;
@@ -17,6 +17,4 @@ pub fn router() -> Router<Cfg> {
         .route("/api/save", post(save::save).get(list::list))
         // 获取/删除存档
         .route("/api/save/{name}", get(code::code).delete(remove::remove))
-        // 存档列表页面
-        .route("/saves", get(list::page))
 }

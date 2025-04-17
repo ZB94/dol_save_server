@@ -9,16 +9,16 @@
   "icons": [
     {
       "purpose": "any",
-      "src": "icon.png",
+      "src": "/pwa/icon.png",
       "sizes": "512x512",
       "type": "image/png"
     }
   ],
   "lang": "zh",
-  "name": "Degrees of Lewdity Simplified Chinese",
+  "name": "Degrees of Lewdity",
   "orientation": "portrait",
   "scope": "/",
-  "short_name": "DoL-chs",
+  "short_name": "DoL",
   "start_url": "/",
   "theme_color": "#230034",
   "screenshots": [],

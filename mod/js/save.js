@@ -56,7 +56,7 @@ fetch("/api/pwa/enabled")
     .then(async resp => {
         const enabled = await resp.json();
         if (enabled) {
-            $('<link crossorigin="use-credentials" rel="manifest" href="/manifest.json">').appendTo("head");
+            $('<link crossorigin="use-credentials" rel="manifest" href="/pwa/manifest.json">').appendTo("head");
             $('<script>if (typeof navigator.serviceWorker !== "undefined") { navigator.serviceWorker.register("/sw.js"); }</script>').appendTo("body");
         }
     })
