@@ -13,10 +13,12 @@
     </div>
 
     <div style="margin-bottom: 5px;">
-        <label for="dss_server">存档服务器地址: </label><br />
+        <label for="dss_server">存档服务器地址 </label>
+        <span>地址需要"http://"或"https://"</span>
+        <span style="color: red;">可以为空, 修改前请先确定 CORS 功能已启用</span>
+        <br />
         <input style="width: 20em;" type="text" id="dss_server" autocomplete="off" />
         <button id="dss_set_server">设置</button>
-        <span>地址需要"http://"或"https://"</span>
     </div>
 
     <div id="dss_div_login" hidden>
@@ -26,7 +28,8 @@
                 <br />
                 <input
                     style="width: 20em;"
-                    type="text" id="dss_username"
+                    type="text"
+                    id="dss_username"
                     autocomplete="off" />
             </div>
             <div>
@@ -142,16 +145,15 @@
             });
         }
 
-        // TODO 优化存储位置
         function dss_set_server() {
             document.querySelector("#dss_msg").textContent = "";
             let server = (document.querySelector("#dss_server").value.match(/(https?:\/\/.+?)\/{0,}$/) || ["", ""])[1].trim();
-            document.cookie = `dss_server=${server}`;
+            localStorage.setItem("dss_server", server);
             dss_init();
         }
 
         function dss_get_server() {
-            return (document.cookie.match(/(^|;\s+)dss_server=(.*?)(;|$)/) || ["", "", ""])[2];
+            return localStorage.getItem("dss_server") || "";
         }
 
         function dss_show_login() {

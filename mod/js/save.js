@@ -39,7 +39,7 @@ Save.onSave.add(function (save, details) {
                     new: idb.active
                 };
                 // 上传
-                let dss_server = (document.cookie.match(/(^|;\s+)dss_server=(.*?)(;|$)/) || ["", "", ""])[2];
+                let dss_server = localStorage.getItem("dss_server") || "";
                 fetch(`${dss_server}/api/save`, {
                     credentials: "include",
                     method: "POST",
@@ -59,7 +59,7 @@ Save.onSave.add(function (save, details) {
 })
 
 
-let dss_server = (document.cookie.match(/(^|;\s+)dss_server=(.*?)(;|$)/) || ["", "", ""])[2];
+let dss_server = localStorage.getItem("dss_server") || "";
 
 // 判断登录状态是否正常
 fetch(`${dss_server}/api/alive`, { credentials: "include" })

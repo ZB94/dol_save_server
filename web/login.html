@@ -91,10 +91,10 @@
         <div>
             <label for="password">密码: </label><br />
             <input
-            type="password"
-            name="password"
-            id="password"
-            autocomplete="off"
+                type="password"
+                name="password"
+                id="password"
+                autocomplete="off"
             />
         </div>
 
@@ -109,22 +109,22 @@
     <script type="text/javascript">
         function login() {
             fetch("/api/login", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                username: document.querySelector("#username").value,
-                password: document.querySelector("#password").value,
-            })
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    username: document.querySelector("#username").value,
+                    password: document.querySelector("#password").value,
+                })
             })
             .then(async resp => {
-            if (resp.ok) {
-                location.href = "/";
-                document.querySelector("#msg").textContent = "登入成功, 正在加载游戏..."
-            } else {
-                document.querySelector("#msg").textContent = await resp.text();
-            }
+                if (resp.ok) {
+                    location.href = "/";
+                    document.querySelector("#msg").textContent = "登入成功, 正在加载游戏..."
+                } else {
+                    document.querySelector("#msg").textContent = await resp.text();
+                }
             });
         }
         </script>
