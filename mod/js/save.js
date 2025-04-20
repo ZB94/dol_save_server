@@ -39,7 +39,9 @@ Save.onSave.add(function (save, details) {
                     new: idb.active
                 };
                 // 上传
-                fetch("/api/save", {
+                let dss_server = (document.cookie.match(/(^|;\s+)dss_server=(.*?)(;|$)/) || ["", "", ""])[2];
+                fetch(`${dss_server}/api/save`, {
+                    credentials: "include",
                     method: "POST",
                     body: JSON.stringify(data),
                     headers: {
@@ -56,17 +58,24 @@ Save.onSave.add(function (save, details) {
     }
 })
 
+
+let dss_server = (document.cookie.match(/(^|;\s+)dss_server=(.*?)(;|$)/) || ["", "", ""])[2];
+
 // 判断登录状态是否正常
-fetch("/api/alive")
+fetch(`${dss_server}/api/alive`, { credentials: "include" })
     .then(resp => {
+        console.log("alive", resp);
         if (!resp.ok) {
             window.alert("云存档功能需要登录才能正常使用, 请在存档界面的云存档处登录");
         }
+    })
+    .catch(error => {
+        window.alert("云存档连接异常, 请在存档界面的云存档处设置服务器地址");
     });
 
 
 // PWA
-fetch("/api/pwa/enabled")
+fetch(`${dss_server}/api/pwa/enabled`, { credentials: "include" })
     .then(async resp => {
         const enabled = await resp.json();
         if (enabled) {
@@ -74,5 +83,3 @@ fetch("/api/pwa/enabled")
             $('<script>if (typeof navigator.serviceWorker !== "undefined") { navigator.serviceWorker.register("/sw.js"); }</script>').appendTo("body");
         }
     });
-
-

@@ -12,6 +12,13 @@
         <p id="dss_msg" style="color: red;"></p>
     </div>
 
+    <div style="margin-bottom: 5px;">
+        <label for="dss_server">存档服务器地址: </label><br />
+        <input style="width: 20em;" type="text" id="dss_server" autocomplete="off" />
+        <button id="dss_set_server">设置</button>
+        <span>地址需要"http://"或"https://"</span>
+    </div>
+
     <div id="dss_div_login" hidden>
         <form>
             <div>
@@ -59,7 +66,7 @@
         async function dss_list_load() {
             let list = document.querySelector("#dss_list");
             let code = document.querySelector("#dss_code");
-            await fetch("/api/save")
+            await fetch(`${dss_get_server()}/api/save`, { credentials: "include" })
                 .then(async function (resp) {
                     list.innerHTML = "";
 
@@ -89,7 +96,7 @@
             let code = document.querySelector("#dss_code");
             let name = list.value;
             if (name.length > 0) {
-                let resp = await fetch(`/api/save/${name}`);
+                let resp = await fetch(`${dss_get_server()}/api/save/${name}`, { credentials:"include" });
                 if (resp.ok) {
                     code.value = await resp.json();
                 }
@@ -103,7 +110,7 @@
             let name = list.value;
             let msg = "";
             if (name.length > 0) {
-                let resp = await fetch(`/api/save/${name}`, { method: "DELETE" });
+                let resp = await fetch(`${dss_get_server()}/api/save/${name}`, { method: "DELETE", credentials:"include" });
                 msg = await resp.json();
             } else {
                 msg = "请选择有效存档";
@@ -113,7 +120,8 @@
         }
 
         async function dss_login() {
-            fetch("/api/login", {
+            fetch(`${dss_get_server()}/api/login`, {
+                credentials:"include",
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -134,6 +142,18 @@
             });
         }
 
+        // TODO 优化存储位置
+        function dss_set_server() {
+            document.querySelector("#dss_msg").textContent = "";
+            let server = (document.querySelector("#dss_server").value.match(/(https?:\/\/.+?)\/{0,}$/) || ["", ""])[1].trim();
+            document.cookie = `dss_server=${server}`;
+            dss_init();
+        }
+
+        function dss_get_server() {
+            return (document.cookie.match(/(^|;\s+)dss_server=(.*?)(;|$)/) || ["", "", ""])[2];
+        }
+
         function dss_show_login() {
             document.querySelector("#dss_div_login").hidden = false;
             document.querySelector("#dss_div_save").hidden = true;
@@ -150,15 +170,21 @@
             document.querySelector("#dss_refresh").onclick = dss_list_load;
             document.querySelector("#dss_delete").onclick = dss_save_delete;
             document.querySelector("#dss_login").onclick = dss_login;
+            document.querySelector("#dss_set_server").onclick = dss_set_server;
             // document.querySelector("#dss_load").onclick = () => Save.deserialize(document.querySelector("#dss_code").value);
 
-            fetch("/api/alive")
+            document.querySelector("#dss_server").value = dss_get_server();
+
+            fetch(`${dss_get_server()}/api/alive`, { credentials:"include" })
                 .then(resp => {
                     if (resp.ok) {
                         dss_show_save();
                     } else {
                         dss_show_login();
                     }
+                })
+                .catch(error => {
+                    document.querySelector("#dss_msg").textContent = "云存档连接异常, 请确认存档服务器地址是否有效";
                 });
         }
 

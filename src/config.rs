@@ -19,6 +19,11 @@ pub struct Config {
     pub save_dir: PathBuf,
     /// 启动时跳过初始化模组流程
     pub init_mod: bool,
+    /// 是否允许存档相关接口跨域访问
+    ///
+    /// **注意:** 若该功能和`auth`同时启用, 则`tls`功能也需要同步启用才能正常访问跨域请求
+    #[serde(default)]
+    pub cors: bool,
     /// 用户认证
     #[serde(default)]
     pub auth: Auth,
@@ -38,6 +43,7 @@ pub struct Auth {
     ///
     /// - 为`true`时`除登录和`PWA`的外其他请求都需要登入
     /// - 为`false`是仅`/api/`开头的请求需要登入
+    #[serde(default)]
     pub global: bool,
     /// 用户列表
     #[serde(default)]

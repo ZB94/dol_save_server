@@ -7,7 +7,12 @@ mod api;
 mod config;
 mod web;
 
-use axum::Router;
+use axum::{
+    Router,
+    extract::{Request, State},
+    middleware::Next,
+    response::{IntoResponse, Redirect, Response},
+};
 use axum_server::tls_rustls::{RustlsAcceptor, RustlsConfig};
 use config::Config;
 use tower::{ServiceBuilder, service_fn};
@@ -15,7 +20,7 @@ use tower_http::{
     compression::CompressionLayer,
     services::{ServeDir, ServeFile},
 };
-use tower_sessions::{Expiry, MemoryStore, SessionManagerLayer};
+use tower_sessions::{Expiry, MemoryStore, Session, SessionManagerLayer, cookie::SameSite};
 use tracing_subscriber::{EnvFilter, fmt::time::ChronoLocal};
 
 pub type Cfg = Arc<Config>;
@@ -38,7 +43,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     app = app
         // API 接口
-        .nest("/api", api::route())
+        .nest("/api", api::route(cfg.clone()))
         // 主页
         .route_service("/", ServeFile::new(index))
         // 其他文件
@@ -47,7 +52,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // Session
     let session_store = MemoryStore::default();
     let session_layer = SessionManagerLayer::new(session_store)
-        .with_secure(cfg.tls.enable)
+        .with_same_site(if cfg.cors {
+            SameSite::None
+        } else {
+            SameSite::Strict
+        })
+        .with_secure(cfg.cors || cfg.tls.enable)
         .with_expiry(Expiry::OnSessionEnd);
 
     let app: Router<()> = app
@@ -56,7 +66,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 .layer(session_layer)
                 .layer(axum::middleware::from_fn_with_state(
                     cfg.clone(),
-                    api::auth_layer,
+                    web_auth_layer,
                 ))
                 .layer(
                     CompressionLayer::new()
@@ -176,4 +186,41 @@ pub fn init_mod(dir: &Path) -> std::io::Result<()> {
     info!("模组初始化结束");
 
     Ok(())
+}
+
+#[instrument(skip_all)]
+pub async fn web_auth_layer(
+    State(cfg): State<Cfg>,
+    session: Session,
+    request: Request,
+    next: Next,
+) -> Response {
+    const WHITE_LIST: &[&str] = &[
+        // 登录相关
+        "/login.html",
+        // PWA 相关
+        "sw.js",
+        "/pwa/icon.png",
+        "/pwa/manifest.json",
+    ];
+    const API_PREFIX: &str = "/api/";
+
+    let user = session
+        .get::<String>(api::User::SESSION_KEY)
+        .await
+        .unwrap_or_default();
+
+    let path = request.uri().path();
+    let is_global = cfg.auth.global;
+    let is_api = path.starts_with(API_PREFIX);
+
+    debug!(path, is_global, is_api, ?user, "auth");
+
+    if !cfg.auth.enable || !is_global || is_api || WHITE_LIST.contains(&path) || user.is_some() {
+        debug!(uri = %request.uri(), "鉴权通过");
+
+        return next.run(request).await;
+    }
+
+    Redirect::temporary("/login.html").into_response()
 }
