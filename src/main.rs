@@ -15,6 +15,7 @@ use tower_http::{
     compression::CompressionLayer,
     services::{ServeDir, ServeFile},
 };
+use tower_sessions::{Expiry, MemoryStore, SessionManagerLayer};
 use tracing_subscriber::{EnvFilter, fmt::time::ChronoLocal};
 
 pub type Cfg = Arc<Config>;
@@ -37,21 +38,33 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     app = app
         // API 接口
-        .nest("/api", api::route(cfg.clone()))
+        .nest("/api", api::route())
         // 主页
         .route_service("/", ServeFile::new(index))
         // 其他文件
         .fallback_service(ServeDir::new(root).fallback(service_fn(web::web_service)));
 
+    // Session
+    let session_store = MemoryStore::default();
+    let session_layer = SessionManagerLayer::new(session_store)
+        .with_secure(cfg.tls.enable)
+        .with_expiry(Expiry::OnSessionEnd);
+
     let app: Router<()> = app
         .layer(
-            ServiceBuilder::new().layer(
-                CompressionLayer::new()
-                    .br(true)
-                    .deflate(true)
-                    .gzip(true)
-                    .zstd(true),
-            ),
+            ServiceBuilder::new()
+                .layer(session_layer)
+                .layer(axum::middleware::from_fn_with_state(
+                    cfg.clone(),
+                    api::auth_layer,
+                ))
+                .layer(
+                    CompressionLayer::new()
+                        .br(true)
+                        .deflate(true)
+                        .gzip(true)
+                        .zstd(true),
+                ),
         )
         .with_state(cfg.clone());
 

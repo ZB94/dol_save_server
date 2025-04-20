@@ -34,6 +34,11 @@ pub struct Config {
 pub struct Auth {
     /// 是否启用
     pub enable: bool,
+    /// 是否所有页面都需要登入才能查看
+    ///
+    /// - 为`true`时`除登录和`PWA`的外其他请求都需要登入
+    /// - 为`false`是仅`/api/`开头的请求需要登入
+    pub global: bool,
     /// 用户列表
     #[serde(default)]
     pub users: Vec<User>,
