@@ -5,14 +5,14 @@ on:
     tags:
       - "v*"
 jobs:
-  release:
+  release_server:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@v4
-      - name: test build rust project
+      - name: build server
         uses: lxl66566/rust-simple-release@v0.2.3
         with:
           # Targets to compile, seperated by comma (allow space)
@@ -37,14 +37,22 @@ jobs:
           # Files or folders to pack into release assets, relative path seperated by comma.
           # The files and folers will be added to the root path of archive.
           # Build outputs (bins and lib) will automatically added to the archive, you don't need to add them twice.
-          files_to_pack: README.md, LICENSE
+          files_to_pack: README.md, LICENSE, save_server.mod.zip
 
           # release create options, see https://cli.github.com/manual/gh_release_create
           # release_options: --draft --title 123
 
           # GITHUB TOKEN, **REQUIRED**
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
         env:
           # debug level, print more logs
           debug: 1
+  upload_mod:
+    needs: ["release_server"]
+    runs-on: "ubuntu-latest"
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: gh release upload ${{ github.ref_name }} save_server.mod.zip --clobber
