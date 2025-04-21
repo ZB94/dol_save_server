@@ -46,13 +46,16 @@ Save.onSave.add(function (save, details) {
                     body: JSON.stringify(data),
                     headers: {
                         "Content-Type": "application/json",
-                    }
+                    },
                 })
-                    .then(resp => {
+                    .then(async resp => {
                         if (!resp.ok) {
-                            window.alert(`云存档上传失败`);
-                            console.log(resp);
+                            throw new Error(await resp.json());
                         }
+                    })
+                    .catch(error => {
+                        console.log(error);
+                        window.alert(`云存档上传失败`);
                     });
             });
     }
@@ -70,7 +73,7 @@ fetch(`${dss_server}/api/alive`, { credentials: "include" })
         }
     })
     .catch(error => {
-        window.alert("云存档连接异常, 请在存档界面的云存档处设置服务器地址");
+        window.alert("云存档请求异常, 请在存档界面的云存档处设置服务器地址");
     });
 
 
