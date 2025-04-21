@@ -12,16 +12,28 @@
         <p id="dss_msg" style="color: red;"></p>
     </div>
 
-    <div style="margin-bottom: 5px;">
-        <label for="dss_server">存档服务器地址 </label>
-        <span>地址需要"http://"或"https://"</span>
-        <span style="color: red;">可以为空, 修改前请先确定 CORS 功能已启用</span>
-        <br />
-        <input style="width: 20em;" type="text" id="dss_server" autocomplete="off" />
-        <button id="dss_set_server">设置</button>
-    </div>
+    <fieldset style="margin-bottom: 5px;">
+        <legend>存档服务器设置</legend>
 
-    <div id="dss_div_login" hidden>
+        <div>
+            <label for="dss_server">存档服务器地址</label>
+            <br />
+            <input style="width: 20em;" type="text" id="dss_server" autocomplete="off" />
+            <button id="dss_set_server">设置</button>
+            <ul>
+                <li>地址需要包括"http://"或"https://"</li>
+                <li style="color: red;">可以为空, 修改为非空值前请先确定 CORS 功能已启用</li>
+            </ul>
+        </div>
+
+        <div>
+            当前存档服务器状态:
+            <span id="dss_server_status" style="color: red;">未知</span>
+        </div>
+    </fieldset>
+
+    <fieldset id="dss_div_login" hidden>
+        <legend>登录</legend>
         <form>
             <div>
                 <label for="dss_username">用户名: </label>
@@ -46,24 +58,23 @@
                 <button type="button" id="dss_login">登入</button>
             </div>
         </form>
-    </div>
+    </fieldset>
 
-    <div id="dss_div_save">
+    <fieldset id="dss_div_save">
+        <legend>存档管理</legend>
         <div>
-            <select id="dss_list" autocomplete="off">
-                <option value selected>请选择存档</option>
-            </select>
+            <label for="dss_list">存档列表</label><br />
+            <select id="dss_list" autocomplete="off"></select>
             <button id="dss_refresh">刷新</button>
             <button id="dss_delete" style="color: red;">删除</button>
             <!-- <button id="dss_load">加载存档</button> -->
         </div>
 
         <div>
-            <p>存档码</p>
-            <textarea id="dss_code" cols="100" rows="20" autocomplete="off"
-                readonly></textarea>
+            存档码<br />
+            <textarea id="dss_code" style="width: 95%;" rows="10" autocomplete="off" readonly></textarea>
         </div>
-    </div>
+    </fieldset>
 
     <script type="text/javascript">
         async function dss_list_load() {
@@ -135,10 +146,9 @@
                 })
             })
             .then(async resp => {
-
                 if (resp.ok) {
-                    dss_show_save();
                     document.querySelector("#dss_msg").textContent = "";
+                    dss_update_status();
                 } else {
                     document.querySelector("#dss_msg").textContent = await resp.json();
                 }
@@ -149,7 +159,7 @@
             document.querySelector("#dss_msg").textContent = "";
             let server = (document.querySelector("#dss_server").value.match(/(https?:\/\/.+?)\/{0,}$/) || ["", ""])[1].trim();
             localStorage.setItem("dss_server", server);
-            dss_init();
+            dss_update_status();
         }
 
         function dss_get_server() {
@@ -167,6 +177,26 @@
             document.querySelector("#dss_refresh").click();
         }
 
+        function dss_update_status() {
+            let status = document.querySelector("#dss_server_status");
+            fetch(`${dss_get_server()}/api/alive`, { credentials:"include" })
+                .then(async resp => {
+                    if (resp.ok) {
+                        status.setAttribute("style", "color: green; ");
+                        dss_show_save();
+                    } else {
+                        status.setAttribute("style", "color: red; ");
+                        dss_show_login();
+                    }
+                    status.textContent = await resp.json();
+                })
+                .catch(error => {
+                    console.log(error);
+                    status.setAttribute("style", "color: red; ");
+                    status.textContent = "请求异常, 请确认存档服务器地址是否有效";
+                });
+        }
+
         async function dss_init() {
             document.querySelector("#dss_list").onchange = dss_code_show;
             document.querySelector("#dss_refresh").onclick = dss_list_load;
@@ -177,17 +207,7 @@
 
             document.querySelector("#dss_server").value = dss_get_server();
 
-            fetch(`${dss_get_server()}/api/alive`, { credentials:"include" })
-                .then(resp => {
-                    if (resp.ok) {
-                        dss_show_save();
-                    } else {
-                        dss_show_login();
-                    }
-                })
-                .catch(error => {
-                    document.querySelector("#dss_msg").textContent = "云存档连接异常, 请确认存档服务器地址是否有效";
-                });
+            await dss_update_status();
         }
 
         setTimeout(dss_init, 0);

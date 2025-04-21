@@ -5,7 +5,7 @@ use std::fmt;
 use tower_sessions::Session;
 
 pub async fn alive() -> Json<&'static str> {
-    Json("OK")
+    Json("正常")
 }
 
 pub async fn login(
