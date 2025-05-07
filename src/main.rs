@@ -12,6 +12,7 @@ use axum::{
 use axum_server::tls_rustls::{RustlsAcceptor, RustlsConfig};
 use config::Config;
 use path_absolutize::Absolutize;
+use tokio::time::MissedTickBehavior;
 use tower::{ServiceBuilder, service_fn};
 use tower_http::{
     compression::CompressionLayer,
@@ -92,6 +93,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     if cfg.backup.enable {
         let mut interval = tokio::time::interval(cfg.backup.period);
+        interval.set_missed_tick_behavior(MissedTickBehavior::Skip);
         let cfg = cfg.clone();
 
         tokio::spawn(async move {
