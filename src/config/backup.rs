@@ -14,6 +14,7 @@ pub struct Backup {
         default = "default_period"
     )]
     pub period: Duration,
+    pub backup_on_start: bool,
     #[serde(flatten)]
     pub method: BackupMethod,
 }

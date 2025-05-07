@@ -95,9 +95,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
         let cfg = cfg.clone();
 
         tokio::spawn(async move {
+            let mut default_mod = cfg.backup.backup_on_start;
             loop {
                 interval.tick().await;
-                backup::backup(cfg.clone()).await;
+                backup::backup(cfg.clone(), default_mod).await;
+                default_mod = false;
             }
         });
     }

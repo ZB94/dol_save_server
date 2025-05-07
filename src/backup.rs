@@ -4,7 +4,7 @@ use chrono::Local;
 
 use crate::{Cfg, config::backup::BackupMethod};
 
-pub fn get_saves(save_dir: &str, period: Duration) -> (bool, Vec<PathBuf>) {
+pub fn get_saves(save_dir: &str, period: Duration, default_mod: bool) -> (bool, Vec<PathBuf>) {
     let pattern = format!("{save_dir}/**/*.save");
     let paths = match glob::glob(&pattern) {
         Ok(p) => p,
@@ -14,7 +14,7 @@ pub fn get_saves(save_dir: &str, period: Duration) -> (bool, Vec<PathBuf>) {
         }
     };
 
-    let mut _mod = false;
+    let mut _mod = default_mod;
 
     let files = paths
         .into_iter()
@@ -32,11 +32,6 @@ pub fn get_saves(save_dir: &str, period: Duration) -> (bool, Vec<PathBuf>) {
                         match mt.elapsed() {
                             Ok(mt) => {
                                 if mt <= period {
-                                    _mod = true;
-                                }
-
-                                #[cfg(debug_assertions)]
-                                {
                                     _mod = true;
                                 }
                             }
@@ -79,9 +74,9 @@ pub fn to_zip(files: Vec<PathBuf>, save_dir: &str) -> Option<Vec<u8>> {
 }
 
 #[instrument(skip_all)]
-pub async fn backup(cfg: Cfg) {
+pub async fn backup(cfg: Cfg, default_mod: bool) {
     let save_dir = cfg.save_dir.to_string_lossy();
-    let (_mod, files) = get_saves(&save_dir, cfg.backup.period);
+    let (_mod, files) = get_saves(&save_dir, cfg.backup.period, default_mod);
 
     let Some(data) = (if _mod {
         if files.is_empty() {
