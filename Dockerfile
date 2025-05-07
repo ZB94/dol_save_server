@@ -11,6 +11,6 @@ COPY ./dol_save_server_docker.toml /dol_save_server.toml
 COPY --from=build-env /dol_save_server /
 EXPOSE 5000
 
-VOLUME [ "/save" ]
+VOLUME [ "/save", "/backup" ]
 
 CMD ["./dol_save_server"]
