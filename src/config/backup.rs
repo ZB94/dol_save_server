@@ -3,6 +3,7 @@ use std::{
     time::Duration,
 };
 
+use educe::Educe;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -19,7 +20,8 @@ pub struct Backup {
     pub method: BackupMethod,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Educe, Clone, Serialize, Deserialize)]
+#[educe(Debug)]
 #[serde(tag = "type")]
 pub enum BackupMethod {
     /// 备份到指定目录
@@ -29,6 +31,7 @@ pub enum BackupMethod {
         smtp_host: String,
         smtp_port: u16,
         username: String,
+        #[educe(Debug(method(super::fmt_hide)))]
         password: String,
         sender: String,
         receiver: Vec<String>,

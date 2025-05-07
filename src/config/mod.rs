@@ -5,6 +5,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use educe::Educe;
 use serde::{Deserialize, Serialize};
 
 use backup::Backup;
@@ -57,20 +58,25 @@ pub struct Auth {
 }
 
 /// 认证用户信息
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Educe, Serialize, Deserialize, Clone)]
+#[educe(Debug)]
 pub struct User {
     /// 用户名
     pub username: String,
     /// 密码
+    #[educe(Debug(method(fmt_hide)))]
     pub password: String,
 }
 
-#[derive(Serialize, Deserialize, Clone, Default)]
+#[derive(Serialize, Deserialize, Clone, Default, Educe)]
+#[educe(Debug)]
 pub struct Tls {
     pub enable: bool,
     #[serde(default)]
+    #[educe(Debug(method(fmt_hide)))]
     pub key: String,
     #[serde(default)]
+    #[educe(Debug(method(fmt_hide)))]
     pub cert: String,
 }
 
@@ -115,21 +121,6 @@ impl Config {
     }
 }
 
-impl fmt::Debug for Tls {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Tls")
-            .field("enable", &self.enable)
-            .field("key", &"***")
-            .field("cert", &"***")
-            .finish()
-    }
-}
-
-impl fmt::Debug for User {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("User")
-            .field("username", &self.username)
-            .field("password", &"***")
-            .finish()
-    }
+pub fn fmt_hide<D>(_d: &D, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    f.write_str("***")
 }
