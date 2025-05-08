@@ -4,9 +4,9 @@ use std::{
 };
 
 use educe::Educe;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Deserialize, Default)]
 pub struct Backup {
     pub enable: bool,
     /// 备份周期 默认1小时
@@ -20,7 +20,7 @@ pub struct Backup {
     pub method: BackupMethod,
 }
 
-#[derive(Educe, Clone, Serialize, Deserialize)]
+#[derive(Educe, Clone, Deserialize)]
 #[educe(Debug)]
 #[serde(tag = "type")]
 pub enum BackupMethod {

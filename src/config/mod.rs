@@ -6,13 +6,13 @@ use std::{
 };
 
 use educe::Educe;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use backup::Backup;
 
 pub mod backup;
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Config {
     /// 游戏根目录
     pub root: PathBuf,
@@ -42,7 +42,7 @@ pub struct Config {
     pub backup: Backup,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[derive(Debug, Deserialize, Clone, Default)]
 pub struct Auth {
     /// 是否启用
     pub enable: bool,
@@ -58,7 +58,7 @@ pub struct Auth {
 }
 
 /// 认证用户信息
-#[derive(Educe, Serialize, Deserialize, Clone)]
+#[derive(Educe, Deserialize, Clone)]
 #[educe(Debug)]
 pub struct User {
     /// 用户名
@@ -68,7 +68,7 @@ pub struct User {
     pub password: String,
 }
 
-#[derive(Serialize, Deserialize, Clone, Default, Educe)]
+#[derive(Deserialize, Clone, Default, Educe)]
 #[educe(Debug)]
 pub struct Tls {
     pub enable: bool,
@@ -80,7 +80,7 @@ pub struct Tls {
     pub cert: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[derive(Debug, Deserialize, Clone, Default)]
 pub struct Pwa {
     pub enable: bool,
 }
