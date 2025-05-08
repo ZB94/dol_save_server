@@ -71,7 +71,7 @@ backup_on_start = true
 type = "Fs"
 # 以下为`Fs`参数
 # 备份目录
-# dir = "backup"
+dir = "backup"
 # 以下为`Mail`参数
 # 发件服务器地址
 # smtp_host = "stmp.example.com"
