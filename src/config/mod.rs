@@ -5,7 +5,12 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use educe::Educe;
 use serde::{Deserialize, Serialize};
+
+use backup::Backup;
+
+pub mod backup;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Config {
@@ -33,6 +38,8 @@ pub struct Config {
     /// PWA 配置
     #[serde(default)]
     pub pwa: Pwa,
+    #[serde(default)]
+    pub backup: Backup,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
@@ -51,20 +58,25 @@ pub struct Auth {
 }
 
 /// 认证用户信息
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Educe, Serialize, Deserialize, Clone)]
+#[educe(Debug)]
 pub struct User {
     /// 用户名
     pub username: String,
     /// 密码
+    #[educe(Debug(method(fmt_hide)))]
     pub password: String,
 }
 
-#[derive(Serialize, Deserialize, Clone, Default)]
+#[derive(Serialize, Deserialize, Clone, Default, Educe)]
+#[educe(Debug)]
 pub struct Tls {
     pub enable: bool,
     #[serde(default)]
+    #[educe(Debug(method(fmt_hide)))]
     pub key: String,
     #[serde(default)]
+    #[educe(Debug(method(fmt_hide)))]
     pub cert: String,
 }
 
@@ -80,7 +92,7 @@ impl Config {
     pub const PATH: &str = "./dol_save_server.toml";
 
     /// 默认存档内容
-    pub const DEFAULT: &str = include_str!("../dol_save_server_example.toml");
+    pub const DEFAULT: &str = include_str!("../../dol_save_server_example.toml");
 
     /// 加载配置
     pub async fn load() -> Result<Self, Box<dyn Error>> {
@@ -109,21 +121,6 @@ impl Config {
     }
 }
 
-impl fmt::Debug for Tls {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Tls")
-            .field("enable", &self.enable)
-            .field("key", &"***")
-            .field("cert", &"***")
-            .finish()
-    }
-}
-
-impl fmt::Debug for User {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("User")
-            .field("username", &self.username)
-            .field("password", &"***")
-            .finish()
-    }
+pub fn fmt_hide<D>(_d: &D, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    f.write_str("***")
 }

@@ -3,10 +3,6 @@ extern crate tracing;
 
 use std::{error::Error, path::Path, sync::Arc};
 
-mod api;
-mod config;
-mod web;
-
 use axum::{
     Router,
     extract::{Request, State},
@@ -15,6 +11,8 @@ use axum::{
 };
 use axum_server::tls_rustls::{RustlsAcceptor, RustlsConfig};
 use config::Config;
+use path_absolutize::Absolutize;
+use tokio::time::MissedTickBehavior;
 use tower::{ServiceBuilder, service_fn};
 use tower_http::{
     compression::CompressionLayer,
@@ -23,13 +21,23 @@ use tower_http::{
 use tower_sessions::{Expiry, MemoryStore, Session, SessionManagerLayer, cookie::SameSite};
 use tracing_subscriber::{EnvFilter, fmt::time::ChronoLocal};
 
+mod api;
+mod backup;
+mod config;
+mod web;
+
 pub type Cfg = Arc<Config>;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     init_log();
 
-    let config = Config::load().await?;
+    let mut config = Config::load().await?;
+    config.save_dir = config
+        .save_dir
+        .absolutize()
+        .inspect_err(|error| error!(%error, "将存档目录转为绝对路径失败"))?
+        .to_path_buf();
 
     let index = config.root.join(&config.index);
     let root = config.root.clone();
@@ -82,6 +90,21 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .inspect_err(|error| error!(%error, "监听服务地址失败"))?;
 
     let addr = listener.local_addr().unwrap();
+
+    if cfg.backup.enable {
+        let mut interval = tokio::time::interval(cfg.backup.period);
+        interval.set_missed_tick_behavior(MissedTickBehavior::Skip);
+        let cfg = cfg.clone();
+
+        tokio::spawn(async move {
+            let mut default_mod = cfg.backup.backup_on_start;
+            loop {
+                interval.tick().await;
+                backup::backup(cfg.clone(), default_mod).await;
+                default_mod = false;
+            }
+        });
+    }
 
     if cfg.tls.enable {
         let tls = RustlsConfig::from_pem(
