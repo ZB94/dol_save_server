@@ -19,14 +19,14 @@ pub fn get_saves(save_dir: &str, period: Duration, default_mod: bool) -> (bool, 
     let files = paths
         .into_iter()
         .filter_map(|p| {
-            if let Ok(path) = p.inspect_err(|error| debug!(%error, "遍历存档目录失败")) {
+            if let Ok(path) = p.inspect_err(|error| warn!(%error, "遍历存档目录失败")) {
                 if !_mod {
                     if let Ok(mt) = path
                         .metadata()
-                        .inspect_err(|error| debug!(%error, ?path, "获取文件信息失败"))
+                        .inspect_err(|error| warn!(%error, ?path, "获取文件信息失败"))
                         .and_then(|mt| {
                             mt.modified()
-                                .inspect_err(|error| debug!(%error, ?path, "获取文件修改时间失败"))
+                                .inspect_err(|error| warn!(%error, ?path, "获取文件修改时间失败"))
                         })
                     {
                         match mt.elapsed() {
@@ -35,7 +35,7 @@ pub fn get_saves(save_dir: &str, period: Duration, default_mod: bool) -> (bool, 
                                     _mod = true;
                                 }
                             }
-                            Err(error) => debug!(%error, ?path, ?mt, "计算修改时间失败"),
+                            Err(error) => warn!(%error, ?path, ?mt, "计算修改时间失败"),
                         }
                     };
                 }
@@ -55,7 +55,7 @@ pub fn to_zip(files: Vec<PathBuf>, save_dir: &str) -> Option<Vec<u8>> {
     for file in files {
         trace!(?file, save_dir, "file path");
         let path = file
-            .strip_prefix(&save_dir)
+            .strip_prefix(save_dir)
             .unwrap()
             .to_string_lossy()
             .to_string();
