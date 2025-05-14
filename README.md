@@ -2,6 +2,10 @@
 
 一个用于适用于[Degrees of Lewdity](https://github.com/Eltirosto/Degrees-of-Lewdity-Chinese-Localization)的Web服务程序
 
+已测试适用游戏版本：
+- `5.3.x`
+- `5.4.x`
+
 ## 主要功能
 
 1. 在游戏存档时同步在服务端创建对应存档文件(需要模组加载器并加载配套模组), 并可随时查看和加载
