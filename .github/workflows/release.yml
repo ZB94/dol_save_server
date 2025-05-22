@@ -5,7 +5,15 @@ on:
     tags:
       - "v*"
 jobs:
+  crate_relase:
+    runs-on: "ubuntu-latest"
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: gh release create --notes-from-tag  ${{ github.ref_name }} save_server.mod.zip
   release_server:
+    needs: ["crate_relase"]
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -48,11 +56,4 @@ jobs:
         env:
           # debug level, print more logs
           debug: 1
-  upload_mod:
-    needs: ["release_server"]
-    runs-on: "ubuntu-latest"
-    env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    steps:
-      - uses: actions/checkout@v4
-      - run: gh release upload ${{ github.ref_name }} save_server.mod.zip --clobber
+
