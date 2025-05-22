@@ -499,6 +499,7 @@ dependencies = [
  "mime_guess",
  "mtzip",
  "path-absolutize",
+ "regex",
  "rustls 0.23.27",
  "serde",
  "serde_json",

@@ -6,7 +6,8 @@ use std::{
 };
 
 use educe::Educe;
-use serde::Deserialize;
+use regex::{Regex, RegexBuilder};
+use serde::{Deserialize, Deserializer};
 
 use backup::Backup;
 
@@ -29,6 +30,9 @@ pub struct Config {
     /// **注意:** 若该功能和`auth`同时启用, 则`tls`功能也需要同步启用才能正常访问跨域请求
     #[serde(default)]
     pub cors: bool,
+    /// 访问黑名单 参数为正则表达式
+    #[serde(default = "default_blacklist", deserialize_with = "de_blacklist")]
+    pub blacklist: Vec<Regex>,
     /// 用户认证
     #[serde(default)]
     pub auth: Auth,
@@ -123,4 +127,30 @@ impl Config {
 
 pub fn fmt_hide<D>(_d: &D, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     f.write_str("***")
+}
+
+fn de_blacklist<'de, D>(d: D) -> Result<Vec<Regex>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    Vec::<String>::deserialize(d)?
+        .into_iter()
+        .map(|s| {
+            RegexBuilder::new(&s)
+                .case_insensitive(true)
+                .build()
+                .map_err(|_| {
+                    serde::de::Error::invalid_value(serde::de::Unexpected::Str(&s), &"Regex")
+                })
+        })
+        .collect::<Result<Vec<_>, D::Error>>()
+}
+
+fn default_blacklist() -> Vec<Regex> {
+    vec![
+        RegexBuilder::new(r#".*\.toml"#)
+            .case_insensitive(true)
+            .build()
+            .unwrap(),
+    ]
 }

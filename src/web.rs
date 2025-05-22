@@ -1,11 +1,14 @@
 use std::convert::Infallible;
 
 use axum::{
-    extract::Request,
+    extract::{Request, State},
     http::{StatusCode, header},
+    middleware::Next,
     response::{IntoResponse, Response},
 };
 use include_dir::{Dir, include_dir};
+
+use crate::Cfg;
 
 const WEB: Dir = include_dir!("web");
 
@@ -26,4 +29,20 @@ pub async fn web_service(request: Request) -> Result<Response, Infallible> {
     } else {
         Ok(StatusCode::NOT_FOUND.into_response())
     }
+}
+
+#[instrument(skip_all)]
+pub async fn blacklist_layer(State(cfg): State<Cfg>, request: Request, next: Next) -> Response {
+    let path = request.uri().path();
+
+    if cfg.blacklist.iter().any(|r| r.is_match(path)) {
+        debug!(path, "黑名单");
+        return (
+            StatusCode::NOT_FOUND,
+            StatusCode::NOT_FOUND.canonical_reason().unwrap(),
+        )
+            .into_response();
+    }
+
+    next.run(request).await
 }

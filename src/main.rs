@@ -71,6 +71,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let app: Router<()> = app
         .layer(
             ServiceBuilder::new()
+                .layer(axum::middleware::from_fn_with_state(
+                    cfg.clone(),
+                    web::blacklist_layer,
+                ))
                 .layer(session_layer)
                 .layer(axum::middleware::from_fn_with_state(
                     cfg.clone(),
