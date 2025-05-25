@@ -1,0 +1,12 @@
+:: dss_dialog_button [widget nobr]
+<<widget "dss_dialog_button">>
+    <div class="fullwidth-buttons">
+        <<button "云存档">>
+            <<script>>
+                Dialog.create("云存档")
+                    .wiki("<<dss_save_list>>")
+                    .open();
+            <</script>>
+        <</button>>
+    </div>
+<</widget>>

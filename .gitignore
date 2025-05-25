@@ -1,14 +1,12 @@
 /target
 /save/
 /mod/boot.json
-/test.toml
 /tls/
 /mod/twee/dss_save_list.twee
 /img
-Degrees of Lewdity.html
-modList.json
 /dol_save_server.toml
 /mod/save_server.mod.zip
 /game/
 /backup/
 download-*.toml
+/*.tar

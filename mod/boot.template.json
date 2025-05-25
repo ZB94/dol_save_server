@@ -16,6 +16,11 @@
           "passage": "overlayReplace",
           "findRegex": "<<toggleTab>>\\s*<<replace #customOverlayContent>><<optionsExportImport>><</replace>>",
           "replace": "$&<</button>><<button \"云存档\">><<toggleTab>><<replace #customOverlayContent>><<dss_save_list>><</replace>>"
+        },
+        {
+          "passage": "StoryCaption",
+          "findRegex": "<div class=\"two-column\">\\s*<<button \"存档\">>[\\s\\S]*?(\\s*<\\/div>){2}",
+          "replace": "$&<<dss_dialog_button>>"
         }
       ]
     }

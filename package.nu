@@ -51,7 +51,7 @@ def conv_savelist [] {
     lines |
     skip until { |l| $l =~ "<body>" } |
     take until { |l| $l =~ "</html>" }  |
-    insert 0 ":: dss_save_list [widget]\n" |
+    insert 0 ":: dss_save_list [widget nobr]\n" |
     str join "\n" |
     str replace '<body>' '<<widget "dss_save_list">>' |
     str replace '</body>' '<</widget>>' |
