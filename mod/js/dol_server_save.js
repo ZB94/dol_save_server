@@ -31,9 +31,10 @@ Save.onSave.add(function (save, details) {
                 }
                 // 获取最新的存档信息
                 const last = details.reduce((l, r) => l.data.date > r.data.date ? l : r);
+
                 const data = {
                     slot: last.slot,
-                    name: last.data.metadata.saveName,
+                    name: last.data.metadata.saveName || (last.data.metadata.saveId || 0).toString(),
                     save: JSON.stringify(save),
                     story: Story.domId,
                     new: idb.active
