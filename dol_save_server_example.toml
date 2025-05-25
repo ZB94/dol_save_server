@@ -64,6 +64,8 @@ enable = false
 # 定时备份
 [backup]
 enable = true
+# 邮件标题
+title = "DoL存档备份"
 # 备份周期 从服务启动开始计算 默认为1小时 格式见 https://crates.io/crates/duration-str
 period = "1h"
 # 是否在启动时无条件触发一次备份

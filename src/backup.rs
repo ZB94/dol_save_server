@@ -118,7 +118,7 @@ pub async fn backup(cfg: Cfg, default_mod: bool) {
             let msg = mail_send::mail_builder::MessageBuilder::new()
                 .from(sender.clone())
                 .to(receiver.clone())
-                .subject(now.format("DOL存档备份 -  %F %T").to_string())
+                .subject(format!("{} - {}", &cfg.backup.title, now.format("%F %T")))
                 .attachment("application/zip", "backup.zip", data);
 
             let mut client = match mail_send::SmtpClientBuilder::new(smtp_host.clone(), *smtp_port)

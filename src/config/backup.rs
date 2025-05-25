@@ -9,6 +9,8 @@ use serde::Deserialize;
 #[derive(Debug, Clone, Deserialize, Default)]
 pub struct Backup {
     pub enable: bool,
+    #[serde(default = "default_title")]
+    pub title: String,
     /// 备份周期 默认1小时
     #[serde(
         deserialize_with = "duration_str::deserialize_duration",
@@ -48,4 +50,8 @@ impl Default for BackupMethod {
 
 fn default_period() -> Duration {
     Duration::from_secs(3600)
+}
+
+fn default_title() -> String {
+    "DoL存档备份".to_string()
 }
