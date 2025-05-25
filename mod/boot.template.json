@@ -19,7 +19,7 @@
         },
         {
           "passage": "StoryCaption",
-          "findRegex": "<div class=\"two-column\">\\s*<<button \"存档\">>[\\s\\S]*?(\\s*<\\/div>){2}",
+          "findRegex": "<div class=\"two-column\">\\s*<<button \"(Save|存档)\">>[\\s\\S]*?(\\s*<\\/div>){2}",
           "replace": "$&<<dss_dialog_button>>"
         }
       ]
