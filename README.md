@@ -2,9 +2,15 @@
 
 一个用于适用于[Degrees of Lewdity](https://github.com/Eltirosto/Degrees-of-Lewdity-Chinese-Localization)的Web服务程序
 
+也支持[Course of Temptation](https://github.com/BlackTeaPie/Course-of-Temptation-Chinese-Localization), 但需要先修改服务配置文件
+
 已测试适用游戏版本：
-- `5.3.x`
-- `5.4.x`
+
+- DoL:
+  - 0.5.3.x
+  - 0.5.4.x
+- CoT:
+  - 0.6.x
 
 ## 主要功能
 
@@ -21,6 +27,8 @@
 2. 将压缩包解压到游戏目录
 3. 运行程序
 4. 打开浏览器, 访问[http://127.0.0.1:5000](http://127.0.0.1:5000)开始游戏
+
+**注意:** `CoT`需要将配置中`index`设置为对应的游戏文件名称(如`CourseOfTemptation-xxx.html`)才能在`/`下直接开始游戏
 
 后续如果存档, 则会生成对应的存档文件在游戏目录的`save`文件夹中.
 
