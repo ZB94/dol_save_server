@@ -11,7 +11,7 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
-      - run: gh release create --notes-from-tag  ${{ github.ref_name }} save_server.mod.zip
+      - run: gh release view ${{ github.ref_name }} || gh release create --notes-from-tag ${{ github.ref_name }} save_server.mod.zip
   release_server:
     needs: ["crate_relase"]
     runs-on: ${{ matrix.os }}

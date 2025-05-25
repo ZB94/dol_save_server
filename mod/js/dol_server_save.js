@@ -1,6 +1,8 @@
 Save.onSave.add(function (save, details) {
-    // 避免存档属性在其他地方被删除
-    save = { ...save };
+    save = {
+        state: State.marshalForSave(),
+        ...save
+    };
 
     if (details.type === "slot" || details.type === "autosave") {
         new Promise(r => setTimeout(r, 1))
@@ -34,7 +36,7 @@ Save.onSave.add(function (save, details) {
 
                 const data = {
                     slot: last.slot,
-                    name: last.data.metadata.saveName || (last.data.metadata.saveId || 0).toString(),
+                    name: V.saveName || (V.saveId).toString(),
                     save: JSON.stringify(save),
                     story: Story.domId,
                     new: idb.active
