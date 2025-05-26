@@ -1,8 +1,7 @@
 Save.onSave.add(function (save, details) {
-    save = {
-        state: State.marshalForSave(),
-        ...save
-    };
+    save = { ...save };
+    // save.state = State.marshalForSave(Config.history.maxSessionStates, true);
+    save.state = State.marshalForSave();
 
     if (details.type === "slot" || details.type === "autosave") {
         new Promise(r => setTimeout(r, 1))
