@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: build server
-        uses: zb94/rust-simple-release@main
+        uses: lxl66566/rust-simple-release@main
         with:
           # Targets to compile, seperated by comma (allow space)
           # Support Linux, Windows and Darwin
