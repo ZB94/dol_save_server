@@ -39,8 +39,27 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .inspect_err(|error| error!(%error, "将存档目录转为绝对路径失败"))?
         .to_path_buf();
 
-    let index = config.root.join(&config.index);
     let root = config.root.clone();
+    let index = if let Some(index) = &config.index {
+        Some(root.join(index))
+    } else {
+        None
+    };
+
+    let index = if let Some(index) = index
+        && index.exists()
+    {
+        index
+    } else {
+        let pattern = root.join("*.html");
+        debug!("pattern: {pattern:?}");
+        glob::glob(&format!("{}", pattern.display()))
+            .inspect_err(|error| error!(%error, "遍历游戏目录失败"))?
+            .find_map(Result::<_, _>::ok)
+            .expect("未在游戏根目录中未找到HTML文件")
+    };
+    info!("index: {index:?}");
+
     let mut app = Router::new();
 
     if config.init_mod {

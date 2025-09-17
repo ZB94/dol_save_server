@@ -18,7 +18,8 @@ pub struct Config {
     /// 游戏根目录
     pub root: PathBuf,
     /// 访问"/"时的默认文件名
-    pub index: String,
+    #[serde(default)]
+    pub index: Option<String>,
     /// 服务地址
     pub bind: SocketAddr,
     /// 存档保存目录
