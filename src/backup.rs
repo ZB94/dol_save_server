@@ -20,24 +20,23 @@ pub fn get_saves(save_dir: &str, period: Duration, default_mod: bool) -> (bool, 
         .into_iter()
         .filter_map(|p| {
             if let Ok(path) = p.inspect_err(|error| warn!(%error, "遍历存档目录失败")) {
-                if !_mod {
-                    if let Ok(mt) = path
+                if !_mod
+                    && let Ok(mt) = path
                         .metadata()
                         .inspect_err(|error| warn!(%error, ?path, "获取文件信息失败"))
                         .and_then(|mt| {
                             mt.modified()
                                 .inspect_err(|error| warn!(%error, ?path, "获取文件修改时间失败"))
                         })
-                    {
-                        match mt.elapsed() {
-                            Ok(mt) => {
-                                if mt <= period {
-                                    _mod = true;
-                                }
+                {
+                    match mt.elapsed() {
+                        Ok(mt) => {
+                            if mt <= period {
+                                _mod = true;
                             }
-                            Err(error) => warn!(%error, ?path, ?mt, "计算修改时间失败"),
                         }
-                    };
+                        Err(error) => warn!(%error, ?path, ?mt, "计算修改时间失败"),
+                    }
                 }
 
                 Some(path)

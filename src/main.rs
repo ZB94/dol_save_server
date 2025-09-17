@@ -40,12 +40,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .to_path_buf();
 
     let root = config.root.clone();
-    let index = if let Some(index) = &config.index {
-        Some(root.join(index))
-    } else {
-        None
-    };
-
+    let index = config.index.as_ref().map(|index| root.join(index));
     let index = if let Some(index) = index
         && index.exists()
     {
