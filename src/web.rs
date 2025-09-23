@@ -35,7 +35,7 @@ pub async fn web_service(request: Request) -> Result<Response, Infallible> {
 pub async fn blacklist_layer(State(cfg): State<Cfg>, request: Request, next: Next) -> Response {
     let path = request.uri().path();
 
-    if cfg.blacklist.iter().any(|r| r.is_match(path)) {
+    if cfg.server.blacklist.iter().any(|r| r.is_match(path)) {
         debug!(path, "黑名单");
         return (
             StatusCode::NOT_FOUND,

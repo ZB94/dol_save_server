@@ -74,12 +74,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // Session
     let session_store = MemoryStore::default();
     let session_layer = SessionManagerLayer::new(session_store)
-        .with_same_site(if cfg.cors {
+        .with_same_site(if cfg.server.cors {
             SameSite::None
         } else {
             SameSite::Strict
         })
-        .with_secure(cfg.cors || cfg.tls.enable)
+        .with_secure(cfg.server.cors || cfg.server.tls.enable)
         .with_expiry(Expiry::OnSessionEnd);
 
     let app: Router<()> = app
@@ -104,7 +104,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         )
         .with_state(cfg.clone());
 
-    let listener = std::net::TcpListener::bind(&cfg.bind)
+    let listener = std::net::TcpListener::bind(&cfg.server.bind)
         .inspect_err(|error| error!(%error, "监听服务地址失败"))?;
 
     let addr = listener.local_addr().unwrap();
@@ -124,10 +124,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
         });
     }
 
-    if cfg.tls.enable {
+    if cfg.server.tls.enable {
         let tls = RustlsConfig::from_pem(
-            cfg.tls.cert.clone().into_bytes(),
-            cfg.tls.key.clone().into_bytes(),
+            cfg.server.tls.cert.clone().into_bytes(),
+            cfg.server.tls.key.clone().into_bytes(),
         )
         .await
         .inspect_err(|error| error!(%error, "初始化TLS配置失败"))?;

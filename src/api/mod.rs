@@ -39,7 +39,7 @@ pub fn route(cfg: Cfg) -> Router<Cfg> {
                     axum::http::header::CACHE_CONTROL,
                     HeaderValue::from_static("no-store"),
                 ))
-                .option_layer(cfg.cors.then(CorsLayer::very_permissive)),
+                .option_layer(cfg.server.cors.then(CorsLayer::very_permissive)),
         )
 }
 
