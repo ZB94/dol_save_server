@@ -4,13 +4,13 @@ use chrono::Local;
 
 use crate::{Cfg, config::backup::BackupMethod};
 
-pub fn get_saves(save_dir: &str, period: Duration, default_mod: bool) -> (bool, Vec<PathBuf>) {
+pub fn get_saves(save_dir: &str, period: Duration, default_mod: bool) -> Option<Vec<PathBuf>> {
     let pattern = format!("{save_dir}/**/*.save");
     let paths = match glob::glob(&pattern) {
         Ok(p) => p,
         Err(error) => {
             warn!(%error, "搜索存档目录失败");
-            return (false, vec![]);
+            return None;
         }
     };
 
@@ -46,7 +46,7 @@ pub fn get_saves(save_dir: &str, period: Duration, default_mod: bool) -> (bool, 
         })
         .collect::<Vec<_>>();
 
-    (_mod, files)
+    _mod.then_some(files)
 }
 
 pub fn to_zip(files: Vec<PathBuf>, save_dir: &str) -> Option<Vec<u8>> {
@@ -72,22 +72,19 @@ pub fn to_zip(files: Vec<PathBuf>, save_dir: &str) -> Option<Vec<u8>> {
     }
 }
 
-#[instrument(skip_all)]
 pub async fn backup(cfg: Cfg, default_mod: bool) {
-    let save_dir = cfg.save_dir.to_string_lossy();
-    let (_mod, files) = get_saves(&save_dir, cfg.backup.period, default_mod);
-
-    let Some(data) = (if _mod {
-        if files.is_empty() {
-            info!("当前无存档文件, 跳过本次备份");
-            None
-        } else {
-            to_zip(files, &save_dir)
-        }
-    } else {
+    let save_dir = cfg.game.save_dir.to_string_lossy();
+    let Some(files) = get_saves(&save_dir, cfg.backup.period, default_mod) else {
         info!("存档文件没有修改, 跳过本次备份");
-        None
-    }) else {
+        return;
+    };
+
+    if files.is_empty() {
+        info!("当前无存档文件, 跳过本次备份");
+        return;
+    }
+
+    let Some(data) = to_zip(files, &save_dir) else {
         return;
     };
 
@@ -99,7 +96,8 @@ pub async fn backup(cfg: Cfg, default_mod: bool) {
                 return;
             }
 
-            let out = dir.join(now.format("%Y%m%d%H%M%S.zip").to_string());
+            let name = now.format("%Y%m%d%H%M%S.zip").to_string();
+            let out = dir.join(name);
             if let Err(error) = std::fs::write(out, data) {
                 error!(%error, "备份存档文件失败");
             } else {

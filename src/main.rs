@@ -11,7 +11,6 @@ use axum::{
 };
 use axum_server::tls_rustls::{RustlsAcceptor, RustlsConfig};
 use config::Config;
-use path_absolutize::Absolutize;
 use tokio::time::MissedTickBehavior;
 use tower::{ServiceBuilder, service_fn};
 use tower_http::{
@@ -33,33 +32,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
     init_log();
 
     let mut config = Config::load().await?;
-    config.save_dir = config
-        .save_dir
-        .absolutize()
-        .inspect_err(|error| error!(%error, "将存档目录转为绝对路径失败"))?
-        .to_path_buf();
-
-    let root = config.root.clone();
-    let index = config.index.as_ref().map(|index| root.join(index));
-    let index = if let Some(index) = index
-        && index.exists()
-    {
-        index
-    } else {
-        let pattern = root.join("*.html");
-        debug!("pattern: {pattern:?}");
-        glob::glob(&format!("{}", pattern.display()))
-            .inspect_err(|error| error!(%error, "遍历游戏目录失败"))?
-            .find_map(Result::<_, _>::ok)
-            .expect("未在游戏根目录中未找到HTML文件")
-    };
-    info!("index: {index:?}");
+    config.game.init();
 
     let mut app = Router::new();
-
-    if config.init_mod {
-        init_mod(&root)?;
-    }
 
     let cfg = Cfg::new(config);
 
@@ -67,9 +42,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
         // API 接口
         .nest("/api", api::route(cfg.clone()))
         // 主页
-        .route_service("/", ServeFile::new(index))
+        .route_service("/", ServeFile::new(cfg.game.index.clone()))
         // 其他文件
-        .fallback_service(ServeDir::new(root).fallback(service_fn(web::web_service)));
+        .fallback_service(
+            ServeDir::new(cfg.game.root.clone()).fallback(service_fn(web::web_service)),
+        );
 
     // Session
     let session_store = MemoryStore::default();

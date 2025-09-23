@@ -39,7 +39,7 @@ pub async fn save(
         new,
     }): Json<Save>,
 ) -> (StatusCode, Json<&'static str>) {
-    let save_dir = state.save_dir.join(user);
+    let save_dir = state.game.save_dir.join(user);
     debug!(?save_dir, "存档目录");
 
     if let Err(error) = tokio::fs::create_dir_all(&save_dir).await {

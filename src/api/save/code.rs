@@ -13,7 +13,7 @@ pub async fn code(
     Extension(User(user)): Extension<User>,
     Path(name): Path<String>,
 ) -> (StatusCode, Json<String>) {
-    let save_path = state.save_dir.join(user).join(name);
+    let save_path = state.game.save_dir.join(user).join(name);
     debug!(?save_path, "存档路径");
 
     if save_path.exists() {

@@ -1,32 +1,22 @@
-use std::{
-    error::Error,
-    fmt,
-    path::{Path, PathBuf},
-};
+use std::{error::Error, fmt, path::Path};
 
 use educe::Educe;
 use serde::Deserialize;
 
 use backup::Backup;
-
-use crate::config::server::Server;
+use game::Game;
+use server::Server;
 
 pub mod backup;
+pub mod game;
 pub mod server;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Config {
+    /// 游戏配置
+    pub game: Game,
     /// 服务配置
     pub server: Server,
-    /// 游戏根目录
-    pub root: PathBuf,
-    /// 访问"/"时的默认文件名
-    #[serde(default)]
-    pub index: Option<String>,
-    /// 存档保存目录
-    pub save_dir: PathBuf,
-    /// 启动时跳过初始化模组流程
-    pub init_mod: bool,
     /// 用户认证
     #[serde(default)]
     pub auth: Auth,

@@ -10,7 +10,7 @@ pub async fn list(
     State(state): State<Cfg>,
     Extension(User(user)): Extension<User>,
 ) -> Json<Vec<Save>> {
-    let save_dir = state.save_dir.join(user);
+    let save_dir = state.game.save_dir.join(user);
     debug!(?save_dir, "存档目录");
 
     let mut list = vec![];
