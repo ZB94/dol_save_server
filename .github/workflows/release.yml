@@ -5,7 +5,7 @@ on:
     tags:
       - "v*"
 jobs:
-  crate_relase:
+  create_relase:
     runs-on: "ubuntu-latest"
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: gh release view ${{ github.ref_name }} || gh release create --notes-from-tag ${{ github.ref_name }} save_server.mod.zip
   release_server:
-    needs: ["crate_relase"]
+    needs: ["create_relase"]
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
