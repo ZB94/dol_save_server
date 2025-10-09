@@ -32,13 +32,13 @@ pub async fn web_service(
 
         Ok(resp)
     } else {
+        if path.is_empty() {
+            return Ok(Redirect::to("/game.html").into_response());
+        }
+
         let game = game
             .and_then(|game| cfg.game.iter().find(|g| g.name == game))
             .unwrap_or(&cfg.game[0]);
-
-        if path.is_empty() {
-            return Ok(Redirect::to(&format!("/{}", game.name)).into_response());
-        }
 
         let path = if path == game.name {
             Path::new(&game.index).to_path_buf()

@@ -29,6 +29,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     init_log();
 
     let mut config = Config::load().await?;
+
     for game in &mut config.game {
         game.init();
     }

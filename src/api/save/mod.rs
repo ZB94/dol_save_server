@@ -38,5 +38,8 @@ pub async fn layer_game_name(
 }
 
 fn game<'g>(name: &str, cfg: &'g Cfg) -> &'g Game {
-    cfg.game.iter().find(|g| g.name == name).unwrap()
+    cfg.game
+        .iter()
+        .find(|g| g.name == name)
+        .unwrap_or(&cfg.game[0])
 }

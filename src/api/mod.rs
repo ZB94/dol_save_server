@@ -13,28 +13,28 @@ use tower_sessions::Session;
 use crate::Cfg;
 
 pub mod auth;
+pub mod game;
 pub mod pwa;
 pub mod save;
 
 pub fn route(cfg: Cfg) -> Router<Cfg> {
     Router::new()
-        // 在线检查
-        .route("/alive", get(auth::alive))
         // 保存存档/存档列表
         .route("/save", post(save::save).get(save::list))
         // 获取/删除存档
         .route("/save/{name}", get(save::code).delete(save::remove))
-        .layer(
-            ServiceBuilder::new()
-                .layer(axum::middleware::from_fn_with_state(
-                    cfg.clone(),
-                    auth_layer,
-                ))
-                .layer(axum::middleware::from_fn_with_state(
-                    cfg.clone(),
-                    save::layer_game_name,
-                )),
-        )
+        .layer(axum::middleware::from_fn_with_state(
+            cfg.clone(),
+            save::layer_game_name,
+        ))
+        // 在线检查
+        .route("/alive", get(auth::alive))
+        // 游戏列表
+        .route("/game", get(game::list))
+        .layer(axum::middleware::from_fn_with_state(
+            cfg.clone(),
+            auth_layer,
+        ))
         // 登录接口
         .route("/login", post(auth::login))
         // PWA 是否启用接口
