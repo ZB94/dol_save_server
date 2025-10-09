@@ -34,6 +34,17 @@ blacklist = [
 # PWA 仅在`localhost`下或启用`tls`(且CA必须为系统信任的)时有效
 pwa_enabled = false
 
+# TLS 相关配置
+[server.tls]
+# 是否启用
+enable = false
+key = """
+替换为你的证书密钥 PEM格式
+"""
+cert = """
+替换为你的证书CERT PEM格式
+"""
+
 # 用户验证相关配置
 [auth]
 # 是否启用
@@ -56,23 +67,6 @@ global = false
 username = "anonymous"
 # 密码
 password = ""
-
-# TLS 相关配置
-[tls]
-# 是否启用
-enable = false
-key = """
-替换为你的证书密钥 PEM格式
-"""
-cert = """
-替换为你的证书CERT PEM格式
-"""
-
-# PWA相关配置
-# PWA 仅在`localhost`下或启用`tls`(且CA必须为系统信任的)时有效
-[pwa]
-# 是否启用
-enable = false
 
 # 定时备份
 [backup]
