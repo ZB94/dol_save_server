@@ -10,7 +10,7 @@ def main [
         null
     }
 
-    let name = download $cfg.repo $cfg.pattern "." $proxy
+    let name = download $cfg.repo $cfg.pattern "." $proxy $cfg.filter?
     let dir = $cfg.dir | path basename
     let parent = $cfg.dir | path dirname
     let backup = $parent | path join $"bak_($dir)"
@@ -48,11 +48,18 @@ def download [
     pattern: string # 要下载的文件 正则表达式
     outdir: path # 输出目录
     proxy?: string # 下载代理
+    filter?: string # 获取release的筛选条件 作为`gh release list`指令的`--jq`参数 默认为获取最新一个release
 ] {
     print $"准备下载 repo=($repo) pattern=($pattern)"
 
-    # 获取最后一个 release 的 tag
-    let tag = (gh release list -R $repo -L 1 --json tagName | from json | first | get tagName)
+    let filter = if $filter == null {
+        'map(select(.isLatest))'
+    } else {
+        $filter
+    }
+    # 获取 release 的 tag
+    let fields = gh release list --help | lines | skip until { |l| $l == "JSON FIELDS" } | skip 1 | first | str trim | split row ', ' | str join ','
+    let tag = (gh release list -R $repo --json $fields -q $filter | from json | first | get tagName)
 
     # 获取满足条件文件
     let assets = (gh release view -R $repo --json assets $tag | from json | get assets | where name =~ $pattern)
