@@ -106,7 +106,7 @@ pub async fn backup_game(cfg: &Cfg, game: &Game, default_mod: bool) {
                 return;
             }
 
-            let name = now.format("%Y%m%d%H%M%S.zip").to_string();
+            let name = format!("{}-{}.zip", game.name, now.format("%Y%m%d%H%M%S.zip"));
             let out = dir.join(name);
             if let Err(error) = std::fs::write(out, data) {
                 error!(%error, "备份存档文件失败");
@@ -125,7 +125,12 @@ pub async fn backup_game(cfg: &Cfg, game: &Game, default_mod: bool) {
             let msg = mail_send::mail_builder::MessageBuilder::new()
                 .from(sender.clone())
                 .to(receiver.clone())
-                .subject(format!("{} - {}", &cfg.backup.title, now.format("%F %T")))
+                .subject(format!(
+                    "{}-{}-{}",
+                    &cfg.backup.title,
+                    &game.name,
+                    now.format("%F %T")
+                ))
                 .attachment("application/zip", "backup.zip", data);
 
             let mut client = match mail_send::SmtpClientBuilder::new(smtp_host.clone(), *smtp_port)
