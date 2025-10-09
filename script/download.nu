@@ -1,6 +1,6 @@
 
 def main [
-    --config: string = "./download.toml" # 下载配置
+    config?: string = "./download.toml" # 下载配置
 ] {
     mut cfg = open $config
 
@@ -34,7 +34,7 @@ def main [
         mkdir $mod_dir
 
         $cfg.mods | each { |mod|
-            let name = download $mod.repo $mod.pattern $mod_dir $proxy
+            let name = download $mod.repo $mod.pattern $mod_dir $proxy $mod.filter?
             $"mod/($name)"
         } | to json | save -f ($cfg.dir | path join "modList.json")
     }
@@ -47,8 +47,8 @@ def download [
     repo: string # github 项目
     pattern: string # 要下载的文件 正则表达式
     outdir: path # 输出目录
-    proxy?: string # 下载代理
-    filter?: string # 获取release的筛选条件 作为`gh release list`指令的`--jq`参数 默认为获取最新一个release
+    proxy? # 下载代理
+    filter? # 获取release的筛选条件 作为`gh release list`指令的`--jq`参数 默认为获取最新一个release
 ] {
     print $"准备下载 repo=($repo) pattern=($pattern)"
 
