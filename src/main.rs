@@ -12,11 +12,8 @@ use axum::{
 use axum_server::tls_rustls::{RustlsAcceptor, RustlsConfig};
 use config::Config;
 use tokio::time::MissedTickBehavior;
-use tower::{ServiceBuilder, service_fn};
-use tower_http::{
-    compression::CompressionLayer,
-    services::{ServeDir, ServeFile},
-};
+use tower::ServiceBuilder;
+use tower_http::compression::CompressionLayer;
 use tower_sessions::{Expiry, MemoryStore, Session, SessionManagerLayer, cookie::SameSite};
 use tracing_subscriber::{EnvFilter, fmt::time::ChronoLocal};
 
@@ -32,7 +29,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
     init_log();
 
     let mut config = Config::load().await?;
-    config.game.init();
+    for game in &mut config.game {
+        game.init();
+    }
 
     let mut app = Router::new();
 
@@ -41,12 +40,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     app = app
         // API 接口
         .nest("/api", api::route(cfg.clone()))
-        // 主页
-        .route_service("/", ServeFile::new(cfg.game.index.clone()))
         // 其他文件
-        .fallback_service(
-            ServeDir::new(cfg.game.root.clone()).fallback(service_fn(web::web_service)),
-        );
+        .fallback(web::web_service);
 
     // Session
     let session_store = MemoryStore::default();
@@ -70,6 +65,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 .layer(axum::middleware::from_fn_with_state(
                     cfg.clone(),
                     web_auth_layer,
+                ))
+                .layer(axum::middleware::from_fn_with_state(
+                    cfg.clone(),
+                    web::game_name::layer_game_name,
                 ))
                 .layer(
                     CompressionLayer::new()

@@ -2,7 +2,10 @@ use std::{io::Cursor, path::PathBuf, time::Duration};
 
 use chrono::Local;
 
-use crate::{Cfg, config::backup::BackupMethod};
+use crate::{
+    Cfg,
+    config::{backup::BackupMethod, game::Game},
+};
 
 pub fn get_saves(save_dir: &str, period: Duration, default_mod: bool) -> Option<Vec<PathBuf>> {
     let pattern = format!("{save_dir}/**/*.save");
@@ -73,7 +76,14 @@ pub fn to_zip(files: Vec<PathBuf>, save_dir: &str) -> Option<Vec<u8>> {
 }
 
 pub async fn backup(cfg: Cfg, default_mod: bool) {
-    let save_dir = cfg.game.save_dir.to_string_lossy();
+    for game in &cfg.game {
+        backup_game(&cfg, game, default_mod).await;
+    }
+}
+
+#[instrument(skip(cfg, game), fields(game_name = game.name))]
+pub async fn backup_game(cfg: &Cfg, game: &Game, default_mod: bool) {
+    let save_dir = game.save_dir.to_string_lossy();
     let Some(files) = get_saves(&save_dir, cfg.backup.period, default_mod) else {
         info!("存档文件没有修改, 跳过本次备份");
         return;

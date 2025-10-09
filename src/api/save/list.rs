@@ -2,15 +2,22 @@ use axum::{Extension, Json, extract::State};
 use chrono::TimeZone;
 use serde::Serialize;
 
-use crate::{Cfg, api::User};
+use crate::{
+    Cfg,
+    api::{
+        User,
+        save::{GameName, game},
+    },
+};
 
 /// 获取存档列表
 #[instrument(skip(state))]
 pub async fn list(
     State(state): State<Cfg>,
+    Extension(GameName(g)): Extension<GameName>,
     Extension(User(user)): Extension<User>,
 ) -> Json<Vec<Save>> {
-    let save_dir = state.game.save_dir.join(user);
+    let save_dir = game(&g, &state).save_dir.join(user);
     debug!(?save_dir, "存档目录");
 
     let mut list = vec![];

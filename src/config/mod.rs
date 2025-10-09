@@ -14,7 +14,7 @@ pub mod server;
 #[derive(Debug, Deserialize, Clone)]
 pub struct Config {
     /// 游戏配置
-    pub game: Game,
+    pub game: Vec<Game>,
     /// 服务配置
     pub server: Server,
     /// 用户认证

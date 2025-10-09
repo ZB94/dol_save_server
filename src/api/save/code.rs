@@ -4,16 +4,23 @@ use axum::{
     http::StatusCode,
 };
 
-use crate::{Cfg, api::User};
+use crate::{
+    Cfg,
+    api::{
+        User,
+        save::{GameName, game},
+    },
+};
 
 /// 获取存档码
 #[instrument(skip(state))]
 pub async fn code(
     State(state): State<Cfg>,
+    Extension(GameName(g)): Extension<GameName>,
     Extension(User(user)): Extension<User>,
     Path(name): Path<String>,
 ) -> (StatusCode, Json<String>) {
-    let save_path = state.game.save_dir.join(user).join(name);
+    let save_path = game(&g, &state).save_dir.join(user).join(name);
     debug!(?save_path, "存档路径");
 
     if save_path.exists() {
