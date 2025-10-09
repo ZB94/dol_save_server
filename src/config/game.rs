@@ -21,6 +21,10 @@ pub struct Game {
 impl Game {
     #[instrument]
     pub fn init(&mut self) {
+        if self.name.contains('/') || self.name.contains('\\') {
+            panic!("游戏名称不能包含'/'或'\\'");
+        }
+
         // 将存档目录转为绝对路径
         self.save_dir = self
             .save_dir
