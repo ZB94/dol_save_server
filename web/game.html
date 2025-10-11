@@ -62,14 +62,14 @@
                 let resp = await fetch("/api/game");
                 let r = await resp.json();
                 if (resp.ok) {
-                    if (r.length == 1) {
-                        document.location = `/${r[0]}`;
+                    if (r.list.length == 1) {
+                        document.location = `/${r.list[0]}`;
                         return;
                     }
 
                     let game = document.querySelector("#game");
                     var first = true;
-                    r.forEach(g => {
+                    r.list.forEach(g => {
                         let option = document.createElement("option");
                         option.value = g;
                         option.textContent = g;
