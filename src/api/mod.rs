@@ -23,10 +23,7 @@ pub fn route(cfg: Cfg) -> Router<Cfg> {
         .route("/save", post(save::save).get(save::list))
         // 获取/删除存档
         .route("/save/{name}", get(save::code).delete(save::remove))
-        .layer(axum::middleware::from_fn_with_state(
-            cfg.clone(),
-            save::layer_game_name,
-        ))
+        .layer(axum::middleware::from_fn(save::layer_game_name))
         // 在线检查
         .route("/alive", get(auth::alive))
         // 游戏列表

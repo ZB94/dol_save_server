@@ -6,7 +6,7 @@ pub mod save;
 
 use axum::{
     Extension, Json,
-    extract::{Request, State},
+    extract::Request,
     http::StatusCode,
     middleware::Next,
     response::{IntoResponse, Response},
@@ -23,13 +23,10 @@ pub struct GameName(pub String);
 
 pub async fn layer_game_name(
     Extension(game_name): Extension<crate::web::game_name::GameName>,
-    State(cfg): State<Cfg>,
     mut request: Request,
     next: Next,
 ) -> Response {
-    if let Some(name) = game_name.0
-        && cfg.game.iter().any(|g| g.name == name)
-    {
+    if let Some(name) = game_name.0 {
         request.extensions_mut().insert(GameName(name));
         next.run(request).await
     } else {
@@ -38,8 +35,5 @@ pub async fn layer_game_name(
 }
 
 fn game<'g>(name: &str, cfg: &'g Cfg) -> &'g Game {
-    cfg.game
-        .iter()
-        .find(|g| g.name == name)
-        .unwrap_or(&cfg.game[0])
+    cfg.game.iter().find(|g| g.name == name).unwrap()
 }

@@ -30,6 +30,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let mut config = Config::load().await?;
 
+    if config.server.cors && config.game.len() != 1 {
+        panic!("CROS功能启用时只支持配置单个游戏");
+    }
+
     for game in &mut config.game {
         game.init();
     }
