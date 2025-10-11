@@ -1,7 +1,7 @@
 services:
   dol:
-    build: .
-    # image: dol_save_server:0.9.1
+    # build: .
+    image: c113/dol_save_server:0.10.0
     ports:
       - "5000:5000"
     volumes:
