@@ -203,7 +203,7 @@
             document.querySelector("#dss_delete").onclick = dss_save_delete;
             document.querySelector("#dss_login").onclick = dss_login;
             document.querySelector("#dss_set_server").onclick = dss_set_server;
-            // document.querySelector("#dss_load").onclick = () => Save.deserialize(document.querySelector("#dss_code").value);
+            // document.querySelector("#dss_load").onclick = () => { Save.deserialize(document.querySelector("#dss_code").value); Dialog.close(); };
 
             document.querySelector("#dss_server").value = dss_get_server();
 

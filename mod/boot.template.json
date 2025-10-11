@@ -13,13 +13,9 @@
       "modVersion": "^1.6.1",
       "params": [
         {
-          "passage": "overlayReplace",
-          "findRegex": "<<toggleTab>>\\s*<<replace #customOverlayContent>><<optionsExportImport>><</replace>>",
-          "replace": "$&<</button>><<button \"云存档\">><<toggleTab>><<replace #customOverlayContent>><<dss_save_list>><</replace>>"
-        },
-        {
           "passage": "StoryCaption",
-          "findRegex": "<div class=\"two-column\">\\s*<<button \"(Save|存档)\">>[\\s\\S]*?(\\s*<\\/div>){2}",
+          "all": true,
+          "findRegex": "<div class=\"two-column\">\\s*<<button \"(Save|存档)\">>[\\s\\S]*?(\\s*<\\/div>){2}|<div class=\"sidebarButtonSplit\">[\\s\\S]*?<<button (SAVES|存档)>>[\\s\\S]*?</div>|<<startCaption>>\\s*?</div>",
           "replace": "$&<<dss_dialog_button>>"
         }
       ]
