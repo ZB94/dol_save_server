@@ -53,5 +53,5 @@ fn default_period() -> Duration {
 }
 
 fn default_title() -> String {
-    "DoL存档备份".to_string()
+    "存档备份".to_string()
 }

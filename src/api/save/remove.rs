@@ -4,16 +4,23 @@ use axum::{
     http::StatusCode,
 };
 
-use crate::{Cfg, api::User};
+use crate::{
+    Cfg,
+    api::{
+        User,
+        save::{GameName, game},
+    },
+};
 
 /// 删除存档
 #[instrument(skip(state))]
 pub async fn remove(
     State(state): State<Cfg>,
     Extension(User(user)): Extension<User>,
+    Extension(GameName(g)): Extension<GameName>,
     Path(name): Path<String>,
 ) -> (StatusCode, Json<String>) {
-    let save_path = state.save_dir.join(user).join(&name);
+    let save_path = game(&g, &state).save_dir.join(user).join(&name);
     debug!(?save_path, "存档路径");
 
     if save_path.exists() && save_path.is_file() {

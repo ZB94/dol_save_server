@@ -2,7 +2,13 @@ use axum::{Extension, Json, extract::State, http::StatusCode};
 use base64::Engine;
 use serde::Deserialize;
 
-use crate::{Cfg, api::User};
+use crate::{
+    Cfg,
+    api::{
+        User,
+        save::{GameName, game},
+    },
+};
 
 /// 存档信息
 #[derive(Debug, Deserialize)]
@@ -31,6 +37,7 @@ pub struct Save {
 pub async fn save(
     State(state): State<Cfg>,
     Extension(User(user)): Extension<User>,
+    Extension(GameName(g)): Extension<GameName>,
     Json(Save {
         slot,
         name,
@@ -39,7 +46,7 @@ pub async fn save(
         new,
     }): Json<Save>,
 ) -> (StatusCode, Json<&'static str>) {
-    let save_dir = state.save_dir.join(user);
+    let save_dir = game(&g, &state).save_dir.join(user);
     debug!(?save_dir, "存档目录");
 
     if let Err(error) = tokio::fs::create_dir_all(&save_dir).await {

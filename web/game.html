@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>选择游戏</title>
+
+    <style>
+        body {
+            text-align: center;
+            background: #111;
+            padding: 2.5em 4.5em;
+            color: #eee;
+        }
+
+        select {
+            width: 100%;
+            max-width: 200px;
+            border: 1px solid #666;
+            background-color: #222;
+            color: #eee;
+            font-size: 110%;
+            line-height: 1.75;
+            padding: 0.6em;
+            transition-duration: 200ms;
+            user-select: none;
+            text-transform: none;
+        }
+
+        button {
+            width: 100%;
+            max-width: 100px;
+            border: 1px solid #666;
+            background-color: #222;
+            color: #eee;
+            font-size: 110%;
+            line-height: 1.75;
+            padding: 0.4em;
+            user-select: none;
+            text-transform: none;
+        }
+    </style>
+</head>
+<body>
+    <fieldset>
+        <legend>选择游戏</legend>
+        <select id="game">
+        </select>
+        <button id="start">开始游戏</button>
+    </fieldset>
+    <p id="msg" style="color: red;"></p>
+
+    <script>
+        document.addEventListener("readystatechange", async () => {
+            if (document.readyState ==="complete") {
+                document.querySelector("#start").onclick = () => {
+                    let game = document.querySelector("#game").value;
+                    document.location = `/${game}`;
+                };
+
+
+                let resp = await fetch("/api/game");
+                let r = await resp.json();
+                if (resp.ok) {
+                    if (r.list.length == 1) {
+                        document.location = `/${r.list[0]}`;
+                        return;
+                    }
+
+                    let game = document.querySelector("#game");
+                    var first = true;
+                    r.list.forEach(g => {
+                        let option = document.createElement("option");
+                        option.value = g;
+                        option.textContent = g;
+                        if (first) {
+                            option.selected = true;
+                            first = false;
+                        }
+                        game.appendChild(option);
+                    });
+                } else {
+                    document.querySelector("#msg").textContent = r;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

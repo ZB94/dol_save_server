@@ -1,48 +1,26 @@
-use std::{
-    error::Error,
-    fmt,
-    net::SocketAddr,
-    path::{Path, PathBuf},
-};
+use std::{error::Error, fmt, path::Path};
 
 use educe::Educe;
-use regex::{Regex, RegexBuilder};
-use serde::{Deserialize, Deserializer};
+use serde::Deserialize;
 
 use backup::Backup;
+use game::Game;
+use server::Server;
 
 pub mod backup;
+pub mod game;
+pub mod server;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Config {
-    /// 游戏根目录
-    pub root: PathBuf,
-    /// 访问"/"时的默认文件名
-    #[serde(default)]
-    pub index: Option<String>,
-    /// 服务地址
-    pub bind: SocketAddr,
-    /// 存档保存目录
-    pub save_dir: PathBuf,
-    /// 启动时跳过初始化模组流程
-    pub init_mod: bool,
-    /// 是否允许存档相关接口跨域访问
-    ///
-    /// **注意:** 若该功能和`auth`同时启用, 则`tls`功能也需要同步启用才能正常访问跨域请求
-    #[serde(default)]
-    pub cors: bool,
-    /// 访问黑名单 参数为正则表达式
-    #[serde(default = "default_blacklist", deserialize_with = "de_blacklist")]
-    pub blacklist: Vec<Regex>,
+    /// 游戏配置
+    pub game: Vec<Game>,
+    /// 服务配置
+    pub server: Server,
     /// 用户认证
     #[serde(default)]
     pub auth: Auth,
-    /// TLS 配置
-    #[serde(default)]
-    pub tls: Tls,
-    /// PWA 配置
-    #[serde(default)]
-    pub pwa: Pwa,
+    /// 存档备份配置
     #[serde(default)]
     pub backup: Backup,
 }
@@ -71,23 +49,6 @@ pub struct User {
     /// 密码
     #[educe(Debug(method(fmt_hide)))]
     pub password: String,
-}
-
-#[derive(Deserialize, Clone, Default, Educe)]
-#[educe(Debug)]
-pub struct Tls {
-    pub enable: bool,
-    #[serde(default)]
-    #[educe(Debug(method(fmt_hide)))]
-    pub key: String,
-    #[serde(default)]
-    #[educe(Debug(method(fmt_hide)))]
-    pub cert: String,
-}
-
-#[derive(Debug, Deserialize, Clone, Default)]
-pub struct Pwa {
-    pub enable: bool,
 }
 
 impl Config {
@@ -128,30 +89,4 @@ impl Config {
 
 pub fn fmt_hide<D>(_d: &D, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     f.write_str("***")
-}
-
-fn de_blacklist<'de, D>(d: D) -> Result<Vec<Regex>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    Vec::<String>::deserialize(d)?
-        .into_iter()
-        .map(|s| {
-            RegexBuilder::new(&s)
-                .case_insensitive(true)
-                .build()
-                .map_err(|_| {
-                    serde::de::Error::invalid_value(serde::de::Unexpected::Str(&s), &"Regex")
-                })
-        })
-        .collect::<Result<Vec<_>, D::Error>>()
-}
-
-fn default_blacklist() -> Vec<Regex> {
-    vec![
-        RegexBuilder::new(r#".*\.toml"#)
-            .case_insensitive(true)
-            .build()
-            .unwrap(),
-    ]
 }

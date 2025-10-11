@@ -11,13 +11,9 @@ use axum::{
 };
 use axum_server::tls_rustls::{RustlsAcceptor, RustlsConfig};
 use config::Config;
-use path_absolutize::Absolutize;
 use tokio::time::MissedTickBehavior;
-use tower::{ServiceBuilder, service_fn};
-use tower_http::{
-    compression::CompressionLayer,
-    services::{ServeDir, ServeFile},
-};
+use tower::ServiceBuilder;
+use tower_http::compression::CompressionLayer;
 use tower_sessions::{Expiry, MemoryStore, Session, SessionManagerLayer, cookie::SameSite};
 use tracing_subscriber::{EnvFilter, fmt::time::ChronoLocal};
 
@@ -33,53 +29,34 @@ async fn main() -> Result<(), Box<dyn Error>> {
     init_log();
 
     let mut config = Config::load().await?;
-    config.save_dir = config
-        .save_dir
-        .absolutize()
-        .inspect_err(|error| error!(%error, "将存档目录转为绝对路径失败"))?
-        .to_path_buf();
 
-    let root = config.root.clone();
-    let index = config.index.as_ref().map(|index| root.join(index));
-    let index = if let Some(index) = index
-        && index.exists()
-    {
-        index
-    } else {
-        let pattern = root.join("*.html");
-        debug!("pattern: {pattern:?}");
-        glob::glob(&format!("{}", pattern.display()))
-            .inspect_err(|error| error!(%error, "遍历游戏目录失败"))?
-            .find_map(Result::<_, _>::ok)
-            .expect("未在游戏根目录中未找到HTML文件")
-    };
-    info!("index: {index:?}");
+    if config.server.cors && config.game.len() != 1 {
+        panic!("CROS功能启用时只支持配置单个游戏");
+    }
+
+    for game in &mut config.game {
+        game.init();
+    }
 
     let mut app = Router::new();
-
-    if config.init_mod {
-        init_mod(&root)?;
-    }
 
     let cfg = Cfg::new(config);
 
     app = app
         // API 接口
         .nest("/api", api::route(cfg.clone()))
-        // 主页
-        .route_service("/", ServeFile::new(index))
         // 其他文件
-        .fallback_service(ServeDir::new(root).fallback(service_fn(web::web_service)));
+        .fallback(web::web_service);
 
     // Session
     let session_store = MemoryStore::default();
     let session_layer = SessionManagerLayer::new(session_store)
-        .with_same_site(if cfg.cors {
+        .with_same_site(if cfg.server.cors {
             SameSite::None
         } else {
             SameSite::Strict
         })
-        .with_secure(cfg.cors || cfg.tls.enable)
+        .with_secure(cfg.server.cors || cfg.server.tls.enable)
         .with_expiry(Expiry::OnSessionEnd);
 
     let app: Router<()> = app
@@ -94,6 +71,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     cfg.clone(),
                     web_auth_layer,
                 ))
+                .layer(axum::middleware::from_fn_with_state(
+                    cfg.clone(),
+                    web::game_name::layer_game_name,
+                ))
                 .layer(
                     CompressionLayer::new()
                         .br(true)
@@ -104,7 +85,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         )
         .with_state(cfg.clone());
 
-    let listener = std::net::TcpListener::bind(&cfg.bind)
+    let listener = std::net::TcpListener::bind(&cfg.server.bind)
         .inspect_err(|error| error!(%error, "监听服务地址失败"))?;
 
     let addr = listener.local_addr().unwrap();
@@ -124,10 +105,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
         });
     }
 
-    if cfg.tls.enable {
+    if cfg.server.tls.enable {
         let tls = RustlsConfig::from_pem(
-            cfg.tls.cert.clone().into_bytes(),
-            cfg.tls.key.clone().into_bytes(),
+            cfg.server.tls.cert.clone().into_bytes(),
+            cfg.server.tls.key.clone().into_bytes(),
         )
         .await
         .inspect_err(|error| error!(%error, "初始化TLS配置失败"))?;
