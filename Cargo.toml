@@ -9,7 +9,7 @@ authors = [
 [dependencies]
 axum = { version = "0.8.1", features = [
 ] }
-axum-server = { version = "0.7.1", features = [
+axum-server = { version = "0.8.0", features = [
     "tls-rustls-no-provider",
 ] }
 base64 = "0.22.1"
@@ -17,7 +17,7 @@ chrono = { version = "0.4.39", default-features = false, features = [
     "clock",
     "std",
 ] }
-duration-str = "0.17.0"
+duration-str = "0.18.0"
 educe = { version = "0.6.0", default-features = false, features = [
     "Debug",
 ] }
@@ -44,7 +44,7 @@ tokio = { version = "1.43.0", features = [
     "fs",
     "io-util",
 ] }
-toml = "0.8.19"
+toml = "0.9.11+spec-1.1.0"
 tower = "0.5.2"
 tower-http = { version = "0.6.2", features = [
     "fs",

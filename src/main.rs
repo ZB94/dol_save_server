@@ -119,19 +119,25 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .inspect_err(|error| error!(%error, "初始化TLS配置失败"))?;
 
         info!("服务地址: https://{addr}/");
-        info!("你可以访问 https://{addr}/saves 来查看服务端已保存的存档");
+        if !cfg.server.api_only {
+            info!("你可以访问 https://{addr}/saves 来查看服务端已保存的存档");
+        }
 
         let acceptor = RustlsAcceptor::new(tls);
         axum_server::from_tcp(listener)
+            .inspect_err(|error| error!(%error, "初始化监听地址失败"))?
             .acceptor(acceptor)
             .serve(app.into_make_service())
             .await
             .inspect_err(|error| error!(%error, "服务启动失败"))?;
     } else {
         info!("服务地址: http://{addr}/");
-        info!("你可以访问 http://{addr}/saves 来查看服务端已保存的存档");
+        if !cfg.server.api_only {
+            info!("你可以访问 http://{addr}/saves 来查看服务端已保存的存档");
+        }
 
         axum_server::from_tcp(listener)
+            .inspect_err(|error| error!(%error, "初始化监听地址失败"))?
             .serve(app.into_make_service())
             .await
             .inspect_err(|error| error!(%error, "服务启动失败"))?;
