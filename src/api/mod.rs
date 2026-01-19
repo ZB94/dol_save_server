@@ -18,7 +18,7 @@ pub mod pwa;
 pub mod save;
 
 pub fn route(cfg: Cfg) -> Router<Cfg> {
-    Router::new()
+    let mut router = Router::new()
         // 保存存档/存档列表
         .route("/save", post(save::save).get(save::list))
         // 获取/删除存档
@@ -33,9 +33,14 @@ pub fn route(cfg: Cfg) -> Router<Cfg> {
             auth_layer,
         ))
         // 登录接口
-        .route("/login", post(auth::login))
+        .route("/login", post(auth::login));
+
+    if !cfg.server.api_only {
         // PWA 是否启用接口
-        .route("/pwa/enabled", get(pwa::enabled))
+        router = router.route("/pwa/enabled", get(pwa::enabled))
+    }
+
+    router
         // 所有接口请求禁用缓存
         .layer(
             ServiceBuilder::new()

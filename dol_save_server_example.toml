@@ -36,6 +36,10 @@ blacklist = [
 # PWA 仅在`localhost`下或启用`tls`(且CA必须为系统信任的)时有效
 pwa_enabled = false
 
+# 是否只提供API接口
+# 启用时不允许配置多个游戏
+api_only = false
+
 # TLS 相关配置
 [server.tls]
 # 是否启用

@@ -32,10 +32,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     if config.server.cors && config.game.len() != 1 {
         panic!("CROS功能启用时只支持配置单个游戏");
+    } else if config.server.api_only && config.game.len() != 1 {
+        panic!("api_only为true时只支持配置单个游戏");
     }
 
     for game in &mut config.game {
-        game.init();
+        game.init(config.server.api_only);
     }
 
     let mut app = Router::new();
@@ -44,9 +46,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     app = app
         // API 接口
-        .nest("/api", api::route(cfg.clone()))
+        .nest("/api", api::route(cfg.clone()));
+
+    if !cfg.server.api_only {
         // 其他文件
-        .fallback(web::web_service);
+        app = app.fallback(web::web_service);
+    }
 
     // Session
     let session_store = MemoryStore::default();
@@ -67,10 +72,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     web::blacklist_layer,
                 ))
                 .layer(session_layer)
-                .layer(axum::middleware::from_fn_with_state(
-                    cfg.clone(),
-                    web_auth_layer,
-                ))
+                .option_layer(
+                    (!cfg.server.api_only)
+                        .then(|| axum::middleware::from_fn_with_state(cfg.clone(), web_auth_layer)),
+                )
                 .layer(axum::middleware::from_fn_with_state(
                     cfg.clone(),
                     web::game_name::layer_game_name,
@@ -238,7 +243,7 @@ pub async fn web_auth_layer(
 
     debug!(path, is_global, is_api, ?user, "auth");
 
-    if !cfg.auth.enable || !is_global || is_api || WHITE_LIST.contains(&path) || user.is_some() {
+    if !cfg.auth.enable || (!is_global || is_api) || WHITE_LIST.contains(&path) || user.is_some() {
         debug!(uri = %request.uri(), "鉴权通过");
 
         return next.run(request).await;

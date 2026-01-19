@@ -11,9 +11,10 @@ use crate::Cfg;
 pub struct GameName(pub Option<String>);
 
 pub async fn layer_game_name(State(cfg): State<Cfg>, mut request: Request, next: Next) -> Response {
-    let mut name = (cfg.server.cors || cfg.game.len() == 1).then(|| cfg.game[0].name.clone());
+    let mut name = (cfg.server.cors || cfg.server.api_only || cfg.game.len() == 1)
+        .then(|| cfg.game[0].name.clone());
 
-    if name.is_none() {
+    if !cfg.server.cors && !cfg.server.api_only && name.is_none() {
         if let Some(referer) = request
             .headers()
             .get(header::REFERER)

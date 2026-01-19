@@ -22,6 +22,9 @@ pub struct Server {
     /// 是否启用 PWA
     #[serde(default)]
     pub pwa_enabled: bool,
+    /// 服务是否只提供API接口
+    #[serde(default)]
+    pub api_only: bool,
 }
 
 #[derive(Deserialize, Clone, Default, Educe)]
