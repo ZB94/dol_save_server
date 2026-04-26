@@ -9,7 +9,7 @@ use axum::{
     middleware::Next,
     response::{IntoResponse, Redirect, Response},
 };
-use axum_server::tls_rustls::{RustlsAcceptor, RustlsConfig};
+use axum_server::tls_rustls::RustlsConfig;
 use chrono::Timelike;
 use config::Config;
 use tokio::time::MissedTickBehavior;
@@ -93,11 +93,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
         )
         .with_state(cfg.clone());
 
-    let listener = std::net::TcpListener::bind(&cfg.server.bind)
-        .inspect_err(|error| error!(%error, "监听服务地址失败"))?;
-
-    let addr = listener.local_addr().unwrap();
-
     if cfg.backup.enable {
         let mut interval = tokio::time::interval(cfg.backup.period);
         interval.set_missed_tick_behavior(MissedTickBehavior::Skip);
@@ -168,26 +163,28 @@ async fn main() -> Result<(), Box<dyn Error>> {
             });
         }
 
-        info!("服务地址: https://{addr}/");
+        info!("服务地址: https://{}/", &cfg.server.bind);
         if !cfg.server.api_only {
-            info!("你可以访问 https://{addr}/saves 来查看服务端已保存的存档");
+            info!(
+                "你可以访问 https://{}/saves 来查看服务端已保存的存档",
+                &cfg.server.bind
+            );
         }
 
-        let acceptor = RustlsAcceptor::new(tls);
-        axum_server::from_tcp(listener)
-            .inspect_err(|error| error!(%error, "初始化监听地址失败"))?
-            .acceptor(acceptor)
+        axum_server::bind_rustls(cfg.server.bind, tls)
             .serve(app.into_make_service())
             .await
             .inspect_err(|error| error!(%error, "服务启动失败"))?;
     } else {
-        info!("服务地址: http://{addr}/");
+        info!("服务地址: http://{}/", &cfg.server.bind);
         if !cfg.server.api_only {
-            info!("你可以访问 http://{addr}/saves 来查看服务端已保存的存档");
+            info!(
+                "你可以访问 http://{}/saves 来查看服务端已保存的存档",
+                &cfg.server.bind
+            );
         }
 
-        axum_server::from_tcp(listener)
-            .inspect_err(|error| error!(%error, "初始化监听地址失败"))?
+        axum_server::bind(cfg.server.bind)
             .serve(app.into_make_service())
             .await
             .inspect_err(|error| error!(%error, "服务启动失败"))?;
