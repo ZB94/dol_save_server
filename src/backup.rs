@@ -133,11 +133,14 @@ pub async fn backup_game(cfg: &Cfg, game: &Game, default_mod: bool) {
                 ))
                 .attachment("application/zip", "backup.zip", data);
 
-            let mut client = match mail_send::SmtpClientBuilder::new(smtp_host.clone(), *smtp_port)
-                .credentials((username.clone(), password.clone()))
-                .connect()
-                .await
-            {
+            let r = async {
+                mail_send::SmtpClientBuilder::new(smtp_host.clone(), *smtp_port)
+                    .map(|c| c.credentials((username.clone(), password.clone())))?
+                    .connect()
+                    .await
+                    .map_err(|e| e.to_string())
+            };
+            let mut client = match r.await {
                 Ok(c) => c,
                 Err(error) => {
                     error!(%error, "连接发件服务器失败");

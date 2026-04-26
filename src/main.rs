@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate tracing;
 
-use std::{error::Error, path::Path, sync::Arc};
+use std::{error::Error, path::Path, sync::Arc, time::Duration};
 
 use axum::{
     Router,
@@ -10,12 +10,15 @@ use axum::{
     response::{IntoResponse, Redirect, Response},
 };
 use axum_server::tls_rustls::{RustlsAcceptor, RustlsConfig};
+use chrono::Timelike;
 use config::Config;
 use tokio::time::MissedTickBehavior;
 use tower::ServiceBuilder;
 use tower_http::compression::CompressionLayer;
 use tower_sessions::{Expiry, MemoryStore, Session, SessionManagerLayer, cookie::SameSite};
 use tracing_subscriber::{EnvFilter, fmt::time::ChronoLocal};
+
+use crate::config::server::TlsType;
 
 mod api;
 mod backup;
@@ -111,12 +114,59 @@ async fn main() -> Result<(), Box<dyn Error>> {
     }
 
     if cfg.server.tls.enable {
-        let tls = RustlsConfig::from_pem(
-            cfg.server.tls.cert.clone().into_bytes(),
-            cfg.server.tls.key.clone().into_bytes(),
-        )
-        .await
+        let is_file: bool;
+        let tls = match cfg.server.tls.ty {
+            TlsType::Pem => {
+                is_file = false;
+                RustlsConfig::from_pem(
+                    cfg.server.tls.cert.clone().into_bytes(),
+                    cfg.server.tls.key.clone().into_bytes(),
+                )
+                .await
+            }
+            TlsType::PemFile => {
+                is_file = true;
+                RustlsConfig::from_pem_file(&cfg.server.tls.cert, &cfg.server.tls.key).await
+            }
+        }
         .inspect_err(|error| error!(%error, "初始化TLS配置失败"))?;
+
+        if is_file {
+            let tls = tls.clone();
+            let tls_key = cfg.server.tls.key.clone();
+            let tls_cert = cfg.server.tls.cert.clone();
+            tokio::spawn(async move {
+                let now = chrono::Local::now();
+                let (instant, duration) = cfg_select! {
+                    debug_assertions => {{
+                        let start = now + chrono::TimeDelta::seconds(60 - (now.second() as i64));
+                        debug!(%start, "开始刷新TLS配置的时间");
+
+                        let instant = tokio::time::Instant::now() + Duration::from_secs((start - now).num_seconds() as u64);
+                        (instant, Duration::from_secs(60))
+                    }}
+                    _ => {{
+                        let start = (now + chrono::Days::new(1))
+                            .with_time(Default::default())
+                            .unwrap();
+                        debug!(%start, "开始刷新TLS配置的时间");
+
+                        let instant = tokio::time::Instant::now() + Duration::from_secs((start - now).num_seconds() as u64);
+                        (instant, Duration::from_secs(60 * 60 * 24))
+                    }}
+                };
+
+                let mut interval = tokio::time::interval_at(instant, duration);
+
+                loop {
+                    interval.tick().await;
+                    match tls.reload_from_pem_file(&tls_cert, &tls_key).await {
+                        Ok(_) => info!("已重载TLS配置"),
+                        Err(error) => error!(%error, "重载TLS配置失败"),
+                    }
+                }
+            });
+        }
 
         info!("服务地址: https://{addr}/");
         if !cfg.server.api_only {

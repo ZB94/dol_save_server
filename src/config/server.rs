@@ -31,12 +31,22 @@ pub struct Server {
 #[educe(Debug)]
 pub struct Tls {
     pub enable: bool,
+    #[serde(default, rename = "type")]
+    pub ty: TlsType,
     #[serde(default)]
     #[educe(Debug(method(super::fmt_hide)))]
     pub key: String,
     #[serde(default)]
     #[educe(Debug(method(super::fmt_hide)))]
     pub cert: String,
+}
+
+#[derive(Deserialize, Clone, Copy, Default, Debug)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum TlsType {
+    #[default]
+    Pem,
+    PemFile,
 }
 
 fn de_blacklist<'de, D>(d: D) -> Result<Vec<Regex>, D::Error>

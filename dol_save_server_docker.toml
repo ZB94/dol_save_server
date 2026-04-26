@@ -44,6 +44,10 @@ api_only = false
 [server.tls]
 # 是否启用
 enable = false
+# `key`和`cert`的值的类型
+# - PEM: PEM格式的字符串
+# - PEM_FILE: 指向PEM文件的路径, 使用该类型时定时重载证书
+type = "PEM"
 key = """
 替换为你的证书密钥 PEM格式
 """
